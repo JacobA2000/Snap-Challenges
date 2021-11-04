@@ -42,8 +42,22 @@ class PhotoModel(db.Model):
     def __repr__(self) -> str:
         return f"Photo(url={self.url}, camera={self.camera}, focal_length={self.focal_length}, aperture={self.aperture}, iso={self.iso}, shutter_speed={self.shutter_speed}, date_taken={self.date_taken})"
 
+class PostModel(db.Model):
+    __tablename__ = "posts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    photo_id = db.Column(db.Integer, db.ForeignKey("photos.id"), nullable=False)
+    desc = db.Column(db.String(280), nullable=True)
+    posted_at = db.Column(db.DateTime, nullable=False)
+    upvotes = db.Column(db.Integer, nullable=False)
+    downvotes = db.Column(db.Integer, nullable=False)
+
+    def __repr__(self) -> str:
+        return f"Post(photo_id={self.photo_id}, desc={self.desc}, posted_at={self.posted_at}, upvotes={self.upvotes}, downvotes={self.downvotes})"
+
+
 # IF RAN WILL OVERWRITE EXISTING DB 
-#db.create_all()
+db.create_all()
 
 # REQPARSE ARGUMENTS
 # PHOTO PUT
