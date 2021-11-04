@@ -294,6 +294,17 @@ class User(Resource):
 
         return user, 201
 
+    def delete(self, user_id) -> str:
+        """
+        Handles DELETE requests sent to the api for users.
+        """
+
+        user = UserModel.query.filter_by(id=user_id).first()
+        db.session.delete(user)
+        db.session.commit()
+
+        return '', 204
+
 api.add_resource(User, "/users/<int:user_id>")
 #endregion
 #endregion
