@@ -1,2 +1,4 @@
 config.cfg
 snap-challenges-venv
+__pycache__
+.vscode
