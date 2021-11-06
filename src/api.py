@@ -1,7 +1,10 @@
 # IMPORTS
-from datetime import datetime
+# Using flask to build and run the webserver
 from flask import Flask
+# Using flask_restful to create the API
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
+# Using SQLAlchemy to handle database and control SQL queries. 
+# It will sanitizes the queries by default
 from flask_sqlalchemy import SQLAlchemy
 import configparser
 from os import path
@@ -181,13 +184,23 @@ class UserHasPostsModel(db.Model):
 #region: API
 #region: PHOTO API ENDPOINT
 # REQPARSE ARGUMENTS
+#POST ARGS
+photo_post_args = reqparse.RequestParser()
+photo_post_args.add_argument('url', type=str, required=True, help="url is required")
+photo_post_args.add_argument('camera', type=str, required=False, help="camera must be type string")
+photo_post_args.add_argument('focal_length', type=int, required=False, help="focal_length must be type int")
+photo_post_args.add_argument('aperture', type=float, required=False, help="aperture must be type float")
+photo_post_args.add_argument('iso', type=int, required=False, help="iso must be type int")
+photo_post_args.add_argument('shutter_speed', type=str, required=False, help="shutter_speed must be type string")
+
+# PUT ARGS
 photo_put_args = reqparse.RequestParser()
-photo_put_args.add_argument('url', type=str, required=True, help="url is required")
-photo_put_args.add_argument('camera', type=str, help="camera must be type string")
-photo_put_args.add_argument('focal_length', type=int, help="focal_length must be type int")
-photo_put_args.add_argument('aperture', type=float, help="aperture must be type float")
-photo_put_args.add_argument('iso', type=int, help="iso must be type int")
-photo_put_args.add_argument('shutter_speed', type=str, help="shutter_speed must be type string")
+photo_put_args.add_argument('url', type=str, required=False, help="url must be type str")
+photo_put_args.add_argument('camera', type=str, required=False, help="camera must be type string")
+photo_put_args.add_argument('focal_length', type=int, required=False, help="focal_length must be type int")
+photo_put_args.add_argument('aperture', type=float, required=False, help="aperture must be type float")
+photo_put_args.add_argument('iso', type=int, required=False, help="iso must be type int")
+photo_put_args.add_argument('shutter_speed', required=False, type=str, help="shutter_speed must be type string")
 
 # RESOURCE FIELDS FOR PHOTO
 photo_resource_fields= {
@@ -205,53 +218,97 @@ class Photo(Resource):
     def get(self, photo_id) -> dict:
         """
         Handles GET requests sent to the api for photos.
+        Used to retrieve data from the server.
         """
-        result = PhotoModel.query.filter_by(id=photo_id).first()
-        return result, 200
+        photo = PhotoModel.query.filter_by(id=photo_id).one_or_none()
+        if photo is None:
+            abort(404, message=f"Photo {photo_id} doesn't exist".format(photo_id))
+        else:
+            return photo, 200
     
     @marshal_with(photo_resource_fields)
-    def put(self, photo_id) -> dict:
+    def post(self, photo_id) -> dict:
         """
-        Handles PUT requests sent to the api for photos.
+        Handles POST requests sent to the api for photos.
+        Used to create data on the server.
         """
-        args = photo_put_args.parse_args()
-
+        args = photo_post_args.parse_args()
+        
         photo = PhotoModel(
             id=photo_id, 
-            url=args['url'], 
-            camera=args['camera'], 
-            focal_length=args['focal_length'], 
-            aperture=args['aperture'], 
-            iso=args['iso'], 
-            shutter_speed=args['shutter_speed'], 
+            **args
         )
 
         db.session.add(photo)
         db.session.commit()
 
+        # Return the newly created photo and http code 201 to indicate success.
         return photo, 201
+
+    @marshal_with(photo_resource_fields)
+    def put(self, photo_id) -> dict:
+        """
+        Handles PUT requests sent to the api for photos.
+        Used to update data on the server.
+        """
+        args = photo_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_photo = PhotoModel(
+            id=photo_id, 
+            **args
+        )
+        
+        photo = PhotoModel.query.filter_by(id=photo_id).one_or_none()
+
+        if photo is None:
+            abort(404, message=f"Photo with id: {photo_id} not found")
+        else:
+            # Update the photo in the database.
+            photo.url = updated_photo.url if updated_photo.url != None else photo.url
+            photo.camera = updated_photo.camera 
+            photo.focal_length = updated_photo.focal_length
+            photo.aperture = updated_photo.aperture 
+            photo.iso = updated_photo.iso 
+            photo.shutter_speed = updated_photo.shutter_speed
+
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
     
     def delete(self, photo_id) -> str:
         """
         Handles DELETE requests sent to the api for photos.
+        Used to delete data from the server.
         """
+        photo = PhotoModel.query.filter_by(id=photo_id).one_or_none()
 
-        photo = PhotoModel.query.filter_by(id=photo_id).first()
-        db.session.delete(photo)
-        db.session.commit()
+        if photo is None:
+            abort(404, message=f"Photo with id: {photo_id} not found")
+        else:
+            db.session.delete(photo)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
 
-        return '', 204
-
-api.add_resource(Photo, "/photos/<int:photo_id>")
+api.add_resource(Photo, "/api/photos/<int:photo_id>")
 #endregion
 #region: USER API ENDPOINT
+user_post_args = reqparse.RequestParser()
+user_post_args.add_argument("username", type=str, required=True, help="username is required")
+user_post_args.add_argument("country_id", type=int, required=True, help="country_id is required")
+user_post_args.add_argument("email", type=str, required=True, help="email is required")
+user_post_args.add_argument("avatar_url", type=str, required=False, help="avatar_url must be type string")
+user_post_args.add_argument("bio", type=str, required=False, help="bio must be type string")
+user_post_args.add_argument("is_admin", type=bool, required=True, help="is_admin is required and must be type bool")
+
 user_put_args = reqparse.RequestParser()
-user_put_args.add_argument("username", type=str, required=True, help="username is required")
-user_put_args.add_argument("country_id", type=int, required=True, help="country_id is required")
-user_put_args.add_argument("email", type=str, required=True, help="email is required")
+user_put_args.add_argument("username", type=str, required=False, help="username must be type str")
+user_put_args.add_argument("country_id", type=int, required=False, help="country_id must be type int")
+user_put_args.add_argument("email", type=str, required=False, help="email must be type str")
 user_put_args.add_argument("avatar_url", type=str, required=False, help="avatar_url must be type string")
 user_put_args.add_argument("bio", type=str, required=False, help="bio must be type string")
-user_put_args.add_argument("is_admin", type=bool, required=True, help="is_admin must be type bool")
+user_put_args.add_argument("is_admin", type=bool, required=False, help="is_admin must be type bool")
 
 # RESOURCE FIELDS FOR USER
 user_resource_fields= {
@@ -269,43 +326,74 @@ class User(Resource):
         """
         Handles GET requests sent to the api for users.
         """
-        result = UserModel.query.filter_by(id=user_id).first()
-        return result, 200
+        user = UserModel.query.filter_by(id=user_id).first()
+        return user, 200
     
     @marshal_with(user_resource_fields)
-    def put(self, user_id) -> dict:
+    def post(self, user_id) -> dict:
         """
-        Handles PUT requests sent to the api for users.
+        Handles POST requests sent to the api for photos.
+        Used to create data on the server.
         """
-        args = user_put_args.parse_args()
-
+        args = user_post_args.parse_args()
+        
         user = UserModel(
             id=user_id, 
-            username=args['username'], 
-            country_id=args['country_id'], 
-            email=args['email'],     
-            avatar_url=args['avatar_url'], 
-            bio=args['bio'],
-            is_admin=args['is_admin']
+            **args
         )
 
         db.session.add(user)
         db.session.commit()
 
+        # Return the newly created photo and http code 201 to indicate success.
         return user, 201
+
+    @marshal_with(user_resource_fields)
+    def put(self, user_id) -> dict:
+        """
+        Handles PUT requests sent to the api for users.
+        Used to update data on the server.
+        """
+        args = user_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_user = UserModel(
+            id=user_id, 
+            **args
+        )
+        
+        user = UserModel.query.filter_by(id=user_id).one_or_none()
+
+        if user is None:
+            abort(404, message=f"User with id: {user_id} not found")
+        else:
+            # Update the photo in the database.
+            user.username = updated_user.username if updated_user.username != None else user.username
+            user.country_id = updated_user.country_id if updated_user.country_id != None else user.country_id
+            user.email = updated_user.email if updated_user.email != None else user.email
+            user.avatar_url = updated_user.avatar_url
+            user.bio = updated_user.bio
+            user.is_admin = updated_user.is_admin if updated_user.is_admin != None else user.is_admin
+
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
 
     def delete(self, user_id) -> str:
         """
         Handles DELETE requests sent to the api for users.
         """
 
-        user = UserModel.query.filter_by(id=user_id).first()
-        db.session.delete(user)
-        db.session.commit()
+        user = UserModel.query.filter_by(id=user_id).one_or_none()
+        if user is None:
+            abort(404, message=f"User with id: {user_id} not found")
+        else:
+            db.session.delete(user)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
 
-        return '', 204
-
-api.add_resource(User, "/users/<int:user_id>")
+api.add_resource(User, "/api/users/<int:user_id>")
 #endregion
 #endregion
 
