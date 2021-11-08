@@ -1,8 +1,9 @@
 # IMPORTS
 # Using flask to build and run the webserver
+from datetime import datetime
 from flask import Flask
 # Using flask_restful to create the API
-from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with
+from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with, inputs
 # Using SQLAlchemy to handle database and control SQL queries. 
 # It will sanitizes the queries by default
 from flask_sqlalchemy import SQLAlchemy
@@ -77,7 +78,7 @@ class ChallengeModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     title = db.Column(db.String(50), nullable=False)
-    desc = db.Column(db.String(280), nullable=False)
+    description = db.Column(db.String(280), nullable=False)
     start_date = db.Column(db.DateTime, nullable=False)
     end_date = db.Column(db.DateTime, nullable=False)
     times_completed = db.Column(db.Integer, nullable=False)
@@ -121,11 +122,11 @@ class CountryModel(db.Model):
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     name = db.Column(db.String(50), nullable=False)
-    iso3166_2_code = db.Column(db.String(2), nullable=False)
+    code = db.Column(db.String(2), nullable=False) # ISO 3166-2 code
     flag_url = db.Column(db.String(200), nullable=False)
 
     def __repr__(self) -> str:
-        return f"Country(name={self.name}, iso3166_2_code={self.iso3166_2_code}, flag_url={self.flag_url})"
+        return f"Country(name={self.name}, iso3166_2_code={self.code}, flag_url={self.flag_url})"
 class BadgeModel(db.Model):
     """
     The BadgeModel class is the model for the database table 'badges'.
@@ -177,7 +178,7 @@ class UserHasPostsModel(db.Model):
         return f"UserHasPosts(user_id={self.user_id}, post_id={self.post_id})"
 
 # IF RAN WILL OVERWRITE EXISTING DB 
-#db.create_all()
+# db.create_all()
 
 #endregion
 
@@ -394,6 +395,195 @@ class User(Resource):
             return '', 204
 
 api.add_resource(User, "/api/users/<int:user_id>")
+#endregion
+#region: COUNTRY API ENDPOINT
+country_post_args = reqparse.RequestParser()
+country_post_args.add_argument("name", type=str, required=True, help="name is required")
+country_post_args.add_argument("code", type=str, required=True, help="code is required")
+country_post_args.add_argument("flag_url", type=str, required=True, help="flag_url is required")
+
+country_put_args = reqparse.RequestParser()
+country_put_args.add_argument("name", type=str, required=False, help="name must be type str")
+country_put_args.add_argument("code", type=str, required=False, help="code must be type str")
+country_put_args.add_argument("flag_url", type=str, required=False, help="flag_url must be type str")
+
+country_resource_fields= {
+    "id": fields.Integer,
+    "name": fields.String,
+    "code": fields.String,
+    "flag_url": fields.String
+}
+
+class Country(Resource):
+    @marshal_with(country_resource_fields)
+    def get(self, country_id) -> dict:
+        """
+        Handles GET requests sent to the api for countries.
+        """
+        country = CountryModel.query.filter_by(id=country_id).first()
+        return country, 200
+    
+    @marshal_with(country_resource_fields)
+    def post(self, country_id) -> dict:
+        """
+        Handles POST requests sent to the api for countries.
+        Used to create data on the server.
+        """
+        args = country_post_args.parse_args()
+        
+        country = CountryModel(
+            id=country_id, 
+            **args
+        )
+
+        db.session.add(country)
+        db.session.commit()
+
+        # Return the newly created photo and http code 201 to indicate success.
+        return country, 201
+
+    @marshal_with(country_resource_fields)
+    def put(self, country_id) -> dict:
+        """
+        Handles PUT requests sent to the api for countries.
+        Used to update data on the server.
+        """
+        args = country_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_country = CountryModel(
+            id=country_id, 
+            **args
+        )
+        
+        country = CountryModel.query.filter_by(id=country_id).one_or_none()
+
+        if country is None:
+            abort(404, message=f"Country with id: {country_id} not found")
+        else:
+            # Update the photo in the database.
+            country.name = updated_country.name if updated_country.name != None else country.name
+            country.code = updated_country.code if updated_country.code != None else country.code
+            country.flag_url = updated_country.flag_url if updated_country.flag_url != None else country.flag_url
+
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
+
+    def delete(self, country_id) -> str:
+        """
+        Handles DELETE requests sent to the api for countries.
+        """
+
+        country = CountryModel.query.filter_by(id=country_id).one_or_none()
+        if country is None:
+            abort(404, message=f"Country with id: {country_id} not found")
+        else:
+            db.session.delete(country)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
+
+api.add_resource(Country, "/api/country/<int:country_id>")
+#endregion
+#region: CHALLENGE API ENDPOINT
+challenge_post_args = reqparse.RequestParser()
+challenge_post_args.add_argument("title", type=str, required=True, help="title is required")
+challenge_post_args.add_argument("description", type=str, required=True, help="description is required")
+challenge_post_args.add_argument("start_date", type=inputs.datetime_from_iso8601, required=True, help="start_date is required")
+challenge_post_args.add_argument("end_date", type=inputs.datetime_from_iso8601, required=True, help="end_date is required")
+challenge_post_args.add_argument("times_completed", type=int, required=True, help="times_completed is required")
+
+challenge_put_args = reqparse.RequestParser()
+challenge_put_args.add_argument("title", type=str, required=False, help="title must be type str")
+challenge_put_args.add_argument("description", type=str, required=False, help="description must be type str")
+challenge_put_args.add_argument("start_date", type=datetime, required=False, help="start_date must be type str")
+challenge_put_args.add_argument("end_date", type=datetime, required=False, help="end_date must be type str")
+challenge_put_args.add_argument("times_completed", type=int, required=False, help="times_completed must be type int")
+
+challenge_resource_fields= {
+    "id": fields.Integer,
+    "title": fields.String,
+    "description": fields.String,
+    "start_date": fields.DateTime(dt_format='iso8601'),
+    "end_date": fields.DateTime(dt_format='iso8601'),
+    "times_completed": fields.Integer
+}
+
+class Challenge(Resource):
+    @marshal_with(challenge_resource_fields)
+    def get(self, challenge_id) -> dict:
+        """
+        Handles GET requests sent to the api for challenges.
+        """
+        challenge = ChallengeModel.query.filter_by(id=challenge_id).first()
+        return challenge, 200
+    
+    @marshal_with(challenge_resource_fields)
+    def post(self, challenge_id) -> dict:
+        """
+        Handles POST requests sent to the api for challenges.
+        Used to create data on the server.
+        """
+        args = challenge_post_args.parse_args()
+        
+        challenge = ChallengeModel(
+            id=challenge_id, 
+            **args
+        )
+
+        db.session.add(challenge)
+        db.session.commit()
+
+        # Return the newly created photo and http code 201 to indicate success.
+        return challenge, 201
+
+    @marshal_with(challenge_resource_fields)
+    def put(self, challenge_id) -> dict:
+        """
+        Handles PUT requests sent to the api for challenges.
+        Used to update data on the server.
+        """
+        args = challenge_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_challenge = ChallengeModel(
+            id=challenge_id, 
+            **args
+        )
+        
+        challenge = ChallengeModel.query.filter_by(id=challenge_id).one_or_none()
+
+        if challenge is None:
+            abort(404, message=f"Challenge with id: {challenge_id} not found")
+        else:
+            # Update the photo in the database.
+            challenge.title = updated_challenge.title if updated_challenge.title != None else challenge.title
+            challenge.description = updated_challenge.description if updated_challenge.description != None else challenge.description
+            challenge.start_date = updated_challenge.start_date if updated_challenge.start_date != None else challenge.start_date
+            challenge.end_date = updated_challenge.end_date if updated_challenge.end_date != None else challenge.end_date
+            challenge.times_completed = updated_challenge.times_completed if updated_challenge.times_completed != None else challenge.times_completed
+        
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
+
+    def delete(self, challenge_id):
+        """
+        Handles DELETE requests sent to the api for challenges.
+        """
+
+        challenge = ChallengeModel.query.filter_by(id=challenge_id).one_or_none()
+        if challenge is None:
+            abort(404, message=f"Challenge with id: {challenge_id} not found")
+        else:
+            db.session.delete(challenge)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
+
+api.add_resource(Challenge, "/api/challenge/<int:challenge_id>")
+
 #endregion
 #endregion
 

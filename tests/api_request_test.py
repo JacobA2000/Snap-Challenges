@@ -1,5 +1,7 @@
 import unittest
 import requests
+from datetime import datetime
+
 class TestPhotoApi(unittest.TestCase):
     url = 'http://127.0.0.1:5000/api/photos/1'
 
@@ -33,7 +35,7 @@ class TestPhotoApi(unittest.TestCase):
         self.assertEqual(response.json(), self.data_should_return, "Data should be equal.")
 
 
-    def test_2_put_photo(self):
+    def test_3_put_photo(self):
         data = {
             "aperture": 4.0,
         }
@@ -42,6 +44,44 @@ class TestPhotoApi(unittest.TestCase):
         self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
 
     def test_4_delete_photo(self):
+        response = requests.delete(self.url)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+
+class TestCountryApi(unittest.TestCase):
+    url = 'http://127.0.0.1:5000/api/country/1'
+
+    post_data = {
+        "name": "United Kingdom",
+        "code": "GB",
+        "flag_url": "test"
+    }
+
+    data_should_return = { 
+        "id": 1,
+        "name": "United Kingdom",
+        "code": "GB",
+        "flag_url": "test"
+    }
+
+    def test_1_post_country(self):
+        response = requests.post(self.url, data=self.post_data)
+        self.assertEqual(response.status_code, 201, "URL should respond with code 201.")
+        self.assertEqual(response.json(), self.data_should_return, "Data should be equal.")
+
+    def test_2_get_country(self):
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200, "URL should respond with code 200.")
+        self.assertEqual(response.json(), self.data_should_return, "Data should be equal.")
+    
+    def test_3_put_country(self):
+        data = {
+            "flag_url": "dataupdated"
+        }
+
+        response = requests.put(self.url, data=data)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+
+    def test_4_delete_country(self):
         response = requests.delete(self.url)
         self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
 
@@ -88,6 +128,49 @@ class TestUserApi(unittest.TestCase):
         self.assertEqual(response.status_code, 204, "URL should respond with code 201.")
 
     def test_4_delete_user(self):
+        response = requests.delete(self.url)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+
+class TestChallengeApi(unittest.TestCase):
+    url = 'http://127.0.0.1:5000/api/challenge/1'
+
+    post_data = {
+        "title": "test challenge",
+        "description": "test description",
+        "start_date": datetime(2020,1,1,0,0,0).isoformat(),
+        "end_date": datetime(2020,1,1,0,0,0).isoformat(),
+        "times_completed": 1
+    }
+
+    data_should_return = {
+        "id": 1,
+        "title": "test challenge",
+        "description": "test description",
+        "start_date": datetime(2020,1,1,0,0,0).isoformat(),
+        "end_date": datetime(2020,1,1,0,0,0).isoformat(),
+        "times_completed": 1
+    }
+
+    def test_1_post_challenge(self):
+        response = requests.post(self.url, data=self.post_data)
+        self.assertEqual(response.status_code, 201, "URL should respond with code 201.")
+        self.assertEqual(response.json(), self.data_should_return, "Data should be equal.")
+
+    def test_2_get_challenge(self):
+        response = requests.get(self.url)
+        self.assertEqual(response.status_code, 200, "URL should respond with code 200.")
+        self.assertEqual(response.json(), self.data_should_return, "Data should be equal.")
+
+    def test_3_put_challenge(self):
+        data = {
+            "title": "updated title",
+            "description": "updated description",
+        }
+
+        response = requests.put(self.url, data=data)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+
+    def test_4_delete_challenge(self):
         response = requests.delete(self.url)
         self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
 
