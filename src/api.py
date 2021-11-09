@@ -1,4 +1,4 @@
-# IMPORTS
+#region: IMPORTS
 # Using flask to build and run the webserver
 from datetime import datetime
 from flask import Flask
@@ -9,6 +9,7 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with, 
 from flask_sqlalchemy import SQLAlchemy
 import configparser
 from os import path
+#endregion
 
 #region: Initialization
 # CREATING THE FLASK APP
@@ -292,7 +293,7 @@ class Photo(Resource):
             # Return the 204 HTTP Code to indicate that the resource has been deleted.
             return '', 204
 
-api.add_resource(Photo, "/api/photos/<int:photo_id>")
+api.add_resource(Photo, "/api/photo/<int:photo_id>")
 #endregion
 #region: USER API ENDPOINT
 user_post_args = reqparse.RequestParser()
@@ -394,7 +395,7 @@ class User(Resource):
             # Return the 204 HTTP Code to indicate that the resource has been deleted.
             return '', 204
 
-api.add_resource(User, "/api/users/<int:user_id>")
+api.add_resource(User, "/api/user/<int:user_id>")
 #endregion
 #region: COUNTRY API ENDPOINT
 country_post_args = reqparse.RequestParser()
@@ -584,6 +585,103 @@ class Challenge(Resource):
 
 api.add_resource(Challenge, "/api/challenge/<int:challenge_id>")
 
+#endregion
+#region: POST API ENDPOINT
+post_post_args = reqparse.RequestParser()
+post_post_args.add_argument("photo_id", type=int, required=True, help="photo_id is required")
+post_post_args.add_argument("desc", type=str, required=False, help="desc must be string")
+post_post_args.add_argument("posted_at", type=inputs.datetime_from_iso8601, required=True, help="posted_at is required")
+post_post_args.add_argument("upvotes", type=int, required=True, help="upvotes is required")
+post_post_args.add_argument("downvotes", type=int, required=True, help="downvotes is required")
+
+post_put_args = reqparse.RequestParser()
+post_put_args.add_argument("photo_id", type=int, required=False, help="photo_id must be int")
+post_put_args.add_argument("desc", type=str, required=False, help="desc must be string")
+post_put_args.add_argument("posted_at", type=inputs.datetime_from_iso8601, required=False, help="posted_at must be datetime")
+post_put_args.add_argument("upvotes", type=int, required=False, help="upvotes must be int")
+post_put_args.add_argument("downvotes", type=int, required=False, help="downvotes must be int")
+
+post_resource_fields = {
+    "id": fields.Integer,
+    "photo_id": fields.Integer,
+    "desc": fields.String,
+    "posted_at": fields.DateTime(dt_format='iso8601'),
+    "upvotes": fields.Integer,
+    "downvotes": fields.Integer
+}
+
+class Post(Resource):
+    @marshal_with(post_resource_fields)
+    def get(self, post_id) -> dict:
+        """
+        Handles GET requests sent to the api for posts.
+        """
+        post = PostModel.query.filter_by(id=post_id).first()
+        return post, 200
+    
+    @marshal_with(post_resource_fields)
+    def post(self, post_id) -> dict:
+        """
+        Handles POST requests sent to the api for posts.
+        Used to create data on the server.
+        """
+        args = post_post_args.parse_args()
+        
+        post = PostModel(
+            id=post_id, 
+            **args
+        )
+
+        db.session.add(post)
+        db.session.commit()
+
+        # Return the newly created photo and http code 201 to indicate success.
+        return post, 201
+
+    @marshal_with(post_resource_fields)
+    def put(self, post_id) -> dict:
+        """
+        Handles PUT requests sent to the api for posts.
+        Used to update data on the server.
+        """
+        args = post_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_post = PostModel(
+            id=post_id, 
+            **args
+        )
+        
+        post = PostModel.query.filter_by(id=post_id).one_or_none()
+
+        if post is None:
+            abort(404, message=f"Post with id: {post_id} not found")
+        else:
+            # Update the photo in the database.
+            post.photo_id = updated_post.photo_id if updated_post.photo_id != None else post.photo_id
+            post.desc = updated_post.desc 
+            post.posted_at = updated_post.posted_at if updated_post.posted_at != None else post.posted_at
+            post.upvotes = updated_post.upvotes if updated_post.upvotes != None else post.upvotes
+            post.downvotes = updated_post.downvotes if updated_post.downvotes != None else post.downvotes
+        
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
+
+    def delete(self, post_id):
+        """
+        Handles DELETE requests sent to the api for posts.
+        """
+        post = PostModel.query.filter_by(id=post_id).one_or_none()
+        if post is None:
+            abort(404, message=f"Post with id: {post_id} not found")
+        else:
+            db.session.delete(post)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
+
+api.add_resource(Post, "/api/post/<int:post_id>")
 #endregion
 #endregion
 
