@@ -49,6 +49,13 @@ post_data = {
     "upvotes": 0,
     "downvotes": 0
 }
+
+badge_endpoint = 'http://127.0.0.1:5000/api/badge/1'
+badge_data = {
+    "name": "test badge",
+    "desc": "test description",
+    "icon_url": "asggas"
+}
 #endregion
 
 # SOME TEST REQUIRE OTHERS TO COMPLETE AND WILL FAIL IF RAN INDIVIDUALLY
@@ -79,6 +86,11 @@ class TestSequence1POSTRequests(unittest.TestCase):
         self.assertEqual(response.status_code, 201, "URL should respond with code 201.")
         self.assertEqual(response.json(), {"id":1, **post_data}, "Data should be equal.")
 
+    def test_6_badge(self):
+        response = requests.post(badge_endpoint, data=badge_data)
+        self.assertEqual(response.status_code, 201, "URL should respond with code 201.")
+        self.assertEqual(response.json(), {"id":1, **badge_data}, "Data should be equal.")
+
 class TestSequence2GETRequests(unittest.TestCase):
     def test_1_photo(self):
         response = requests.get(photo_endpoint)
@@ -104,6 +116,11 @@ class TestSequence2GETRequests(unittest.TestCase):
         response = requests.get(post_endpoint)
         self.assertEqual(response.status_code, 200, "URL should respond with code 200.")
         self.assertEqual(response.json(), {"id":1, **post_data}, "Data should be equal.")
+
+    def test_6_badge(self):
+        response = requests.get(badge_endpoint)
+        self.assertEqual(response.status_code, 200, "URL should respond with code 200.")
+        self.assertEqual(response.json(), {"id":1, **badge_data}, "Data should be equal.")
 
 class TestSequence3PUTRequests(unittest.TestCase):
     def test_1_photo(self):
@@ -147,7 +164,16 @@ class TestSequence3PUTRequests(unittest.TestCase):
 
         response = requests.put(post_endpoint, data=data)
         self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+    
+    def test_6_badge(self):
+        data = {
+            "name": "updated name",
+            "desc": "updated description",
+            "icon_url": "updated icon url"
+        }
 
+        response = requests.put(badge_endpoint, data=data)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
 class TestSequence4DELETERequests(unittest.TestCase):
     
     def test_1_user(self):
@@ -168,6 +194,10 @@ class TestSequence4DELETERequests(unittest.TestCase):
 
     def test_5_photo(self):
         response = requests.delete(photo_endpoint)
+        self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
+
+    def test_6_badge(self):
+        response = requests.delete(badge_endpoint)
         self.assertEqual(response.status_code, 204, "URL should respond with code 204.")
 #endregion
 
