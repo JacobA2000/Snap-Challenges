@@ -683,6 +683,95 @@ class Post(Resource):
 
 api.add_resource(Post, "/api/post/<int:post_id>")
 #endregion
+#region: BADGE API ENDPOINT
+badge_post_args = reqparse.RequestParser()
+badge_post_args.add_argument("name", type=str, required=True, help="name is required")
+badge_post_args.add_argument("desc", type=str, required=True, help="desc is required")
+badge_post_args.add_argument("icon_url", type=str, required=True, help="icon_url is required")
+
+badge_put_args = reqparse.RequestParser()
+badge_put_args.add_argument("name", type=str, required=False, help="name must be string")
+badge_put_args.add_argument("desc", type=str, required=False, help="desc must be string")
+badge_put_args.add_argument("icon_url", type=str, required=False, help="icon_url must be string")
+
+badge_resource_fields = {
+    "id": fields.Integer,
+    "name": fields.String,
+    "desc": fields.String,
+    "icon_url": fields.String
+}
+
+class Badge(Resource):
+    @marshal_with(badge_resource_fields)
+    def get(self, badge_id) -> dict:
+        """
+        Handles GET requests sent to the api for badges.
+        """
+        badge = BadgeModel.query.filter_by(id=badge_id).first()
+        return badge, 200
+    
+    @marshal_with(badge_resource_fields)
+    def post(self, badge_id) -> dict:
+        """
+        Handles POST requests sent to the api for badges.
+        Used to create data on the server.
+        """
+        args = badge_post_args.parse_args()
+        
+        badge = BadgeModel(
+            id=badge_id, 
+            **args
+        )
+
+        db.session.add(badge)
+        db.session.commit()
+
+        # Return the newly created photo and http code 201 to indicate success.
+        return badge, 201
+
+    @marshal_with(badge_resource_fields)
+    def put(self, badge_id) -> dict:
+        """
+        Handles PUT requests sent to the api for badges.
+        Used to update data on the server.
+        """
+        args = badge_put_args.parse_args()
+
+        # Get the photo info sent to the api.
+        updated_badge = BadgeModel(
+            id=badge_id, 
+            **args
+        )
+        
+        badge = BadgeModel.query.filter_by(id=badge_id).one_or_none()
+
+        if badge is None:
+            abort(404, message=f"Post with id: {badge_id} not found")
+        else:
+            # Update the photo in the database.
+            badge.name = updated_badge.name if updated_badge.name  != None else badge.name
+            badge.desc = updated_badge.desc if updated_badge.desc  != None else badge.desc
+            badge.icon_url = updated_badge.icon_url if updated_badge.icon_url  != None else badge.icon_url
+        
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been updated.
+            return '', 204
+
+    def delete(self, badge_id):
+        """
+        Handles DELETE requests sent to the api for badges.
+        """
+        badge = BadgeModel.query.filter_by(id=badge_id).one_or_none()
+        if badge is None:
+            abort(404, message=f"Badge with id: {badge_id} not found")
+        else:
+            db.session.delete(badge)
+            db.session.commit()
+            # Return the 204 HTTP Code to indicate that the resource has been deleted.
+            return '', 204
+
+api.add_resource(Badge, "/api/badge/<int:badge_id>")
+#endregion
 #endregion
 
 if __name__ == "__main__":
