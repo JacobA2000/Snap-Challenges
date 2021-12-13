@@ -1,6 +1,6 @@
-import { Appearance } from 'react-native'
+import { Appearance  } from 'react-native'
 
-export const colorScheme = Appearance.getColorScheme()
+export const colorScheme = Appearance.getColorScheme();
 
 export let backgroundColor = '#fff'
 export let textColor = '#000'

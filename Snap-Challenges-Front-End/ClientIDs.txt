@@ -1,0 +1,4 @@
+expoClientId = 918375695632-au8sr5oebk32remoefi1d4m3c8suludp.apps.googleusercontent.com
+iosClientId = 918375695632-lj5c0c0187gb06om7p2rqoovnrm055hp.apps.googleusercontent.com
+androidClientId = 918375695632-kfdjlaes6gfbtnillksad5bjk00s2rf6.apps.googleusercontent.com
+webClientId = 918375695632-euu2cqvfnut4tm06c54ee5o57j6b0k9t.apps.googleusercontent.com
