@@ -1,4 +1,3 @@
-
 class User { 
     // Constructor
     constructor(id, username, familyName, givenName, email, avatar_url, bio, country_id, is_admin) {
