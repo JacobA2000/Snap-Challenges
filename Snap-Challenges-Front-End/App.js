@@ -22,6 +22,9 @@ export default function App() {
   React.useEffect(() => {
     if (response?.type === 'success') {
       const { authentication } = response;
+      const { accessToken } = authentication;
+
+      console.log(accessToken);
     }
   }, [response]);
 
