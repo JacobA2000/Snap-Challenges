@@ -1364,6 +1364,78 @@
     semver "7.3.2"
     tempy "0.3.0"
 
+"@expo/dev-server@0.1.101":
+  version "0.1.101"
+  resolved "https://registry.npmjs.org/@expo/dev-server/-/dev-server-0.1.101.tgz"
+  integrity sha512-VRL3sDJXGUiJK3dv+yY4QpK8b7FTk5Khxf0U96wrAFmsnTWh3EhH0kbOZa37+A+5rUm6jwAS3gUE58vE7Jaw8g==
+  dependencies:
+    "@expo/bunyan" "4.0.0"
+    "@expo/metro-config" "0.3.7"
+    "@expo/osascript" "2.0.31"
+    "@react-native-community/cli-server-api" "^5.0.1"
+    body-parser "1.19.0"
+    chalk "^4.0.0"
+    connect "^3.7.0"
+    fs-extra "9.0.0"
+    node-fetch "^2.6.0"
+    open "^8.3.0"
+    resolve-from "^5.0.0"
+    semver "7.3.2"
+    serialize-error "6.0.0"
+    temp-dir "^2.0.0"
+
+"@expo/dev-tools@0.13.138":
+  version "0.13.138"
+  resolved "https://registry.npmjs.org/@expo/dev-tools/-/dev-tools-0.13.138.tgz"
+  integrity sha512-ud8dVfrA5TGfa9QZTcXD09otT8VeNX0MqECl/1X229xbzmgMXRuBoTVoIV+yxGIp2WtPmZlOe1g6gMzZTq+X8g==
+  dependencies:
+    "@expo/config" "6.0.14"
+    base64url "3.0.1"
+    better-opn "^3.0.1"
+    express "4.16.4"
+    freeport-async "2.0.0"
+    graphql "0.13.2"
+    graphql-tools "3.0.0"
+    iterall "1.2.2"
+    lodash "^4.17.19"
+    subscriptions-transport-ws "0.9.8"
+
+"@expo/devcert@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@expo/devcert/-/devcert-1.0.0.tgz"
+  integrity sha512-cahGyQCmpZmHpn2U04NR9KwsOIZy7Rhsw8Fg4q+A6563lIJxbkrgPnxq/O3NQAh3ohEvOXOOnoFx0b4yycCkpQ==
+  dependencies:
+    application-config-path "^0.1.0"
+    command-exists "^1.2.4"
+    debug "^3.1.0"
+    eol "^0.9.1"
+    get-port "^3.2.0"
+    glob "^7.1.2"
+    lodash "^4.17.4"
+    mkdirp "^0.5.1"
+    password-prompt "^1.0.4"
+    rimraf "^2.6.2"
+    sudo-prompt "^8.2.0"
+    tmp "^0.0.33"
+    tslib "^1.10.0"
+
+"@expo/image-utils@0.3.18":
+  version "0.3.18"
+  resolved "https://registry.npmjs.org/@expo/image-utils/-/image-utils-0.3.18.tgz"
+  integrity sha512-77/ub2aGuf7SYfaFhvCHE54Hs/jRuU5j+pemS5seLfVHNwHbJSse91TMhsTLLNz3GwwqTxFVe3KMycSccJ73nA==
+  dependencies:
+    "@expo/spawn-async" "1.5.0"
+    chalk "^4.0.0"
+    fs-extra "9.0.0"
+    getenv "^1.0.0"
+    jimp-compact "0.16.1"
+    mime "^2.4.4"
+    node-fetch "^2.6.0"
+    parse-png "^2.1.0"
+    resolve-from "^5.0.0"
+    semver "7.3.2"
+    tempy "0.3.0"
+
 "@expo/json-file@8.2.33":
   "integrity" "sha512-CDnhjdirUs6OdN5hOSTJ2y3i9EiJMk7Z5iDljC5xyCHCrUex7oyI8vbRsZEojAahxZccgL/PrO+CjakiFFWurg=="
   "resolved" "https://registry.npmjs.org/@expo/json-file/-/json-file-8.2.33.tgz"
@@ -1555,6 +1627,11 @@
   "integrity" "sha512-0jbp4RxjYopTsIdLl+/Fy2TiwVYHy4mgeu07DG4b/LyM0OS/+lPP5c9sbnt/AMlnF6qz2JRZpPpGw1eMNS6A4w=="
   "resolved" "https://registry.npmjs.org/@react-native/polyfills/-/polyfills-1.0.0.tgz"
   "version" "1.0.0"
+
+"@react-native/polyfills@2.0.0":
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/@react-native/polyfills/-/polyfills-2.0.0.tgz#4c40b74655c83982c8cf47530ee7dc13d957b6aa"
+  integrity sha512-K0aGNn1TjalKj+65D7ycc1//H9roAQ51GJVk5ZJQFb2teECGmzd86bYDC0aYdbRf7gtovescq4Zt6FR0tgXiHQ==
 
 "@react-native/polyfills@2.0.0":
   version "2.0.0"
