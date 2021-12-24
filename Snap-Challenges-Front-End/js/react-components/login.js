@@ -18,7 +18,7 @@ const windowHeight = Dimensions.get('window').height;
 
 WebBrowser.maybeCompleteAuthSession();
 
-const Login = ()  => {
+const Login = ({ navigation })  => {
   const [request, response, promptAsync] = Google.useAuthRequest({
     expoClientId: '918375695632-au8sr5oebk32remoefi1d4m3c8suludp.apps.googleusercontent.com',
     iosClientId: '918375695632-lj5c0c0187gb06om7p2rqoovnrm055hp.apps.googleusercontent.com',
@@ -37,7 +37,8 @@ const Login = ()  => {
           console.log(userData);
         }
       );
-
+      
+      navigation.navigate('SignUpDetailsForm');
     }
   }, [response]);
 
