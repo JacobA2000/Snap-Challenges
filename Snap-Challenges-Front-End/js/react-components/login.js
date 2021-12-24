@@ -10,6 +10,9 @@ import { colorScheme, backgroundColor, textColor, altColor1, altColor2 } from '.
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 
+// MY IMPORTS
+import { GoogleApi } from '../google-api-handler.js';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -28,7 +31,13 @@ const Login = ()  => {
       const { authentication } = response;
       const { accessToken } = authentication;
 
-      console.log(accessToken);
+      let googleApi = new GoogleApi(accessToken);
+      googleApi.getUserData(accessToken)
+        .then(userData => {
+          console.log(userData);
+        }
+      );
+
     }
   }, [response]);
 
@@ -44,13 +53,6 @@ const Login = ()  => {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: backgroundColor,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
   logo: {
     width: windowHeight * 0.5,
     height: windowHeight * 0.5,
