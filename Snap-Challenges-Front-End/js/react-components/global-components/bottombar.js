@@ -35,7 +35,7 @@ const BottomBar = ()  => {
 const styles = StyleSheet.create({
     bottomBarContainer: {
         width: windowWidth,
-        height: windowHeight * 0.1,
+        height: windowHeight * 0.075,
         backgroundColor: altColor1,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -55,9 +55,9 @@ const styles = StyleSheet.create({
     },
 
     bottomBarNavButton: {
-        width: windowHeight * 0.075,
-        height: windowHeight * 0.075,
-        borderRadius: windowHeight * 0.075,
+        width: windowHeight * 0.06,
+        height: windowHeight * 0.06,
+        borderRadius: windowHeight * 0.06,
         backgroundColor: altColor2,
         justifyContent: 'center',
         alignItems: 'center',
@@ -69,9 +69,9 @@ const styles = StyleSheet.create({
     },
 
     bottomBarNavButtonProfileImage: {
-        width: windowHeight * 0.07,
-        height: windowHeight * 0.07,
-        borderRadius: windowHeight * 0.07,
+        width: windowHeight * 0.055,
+        height: windowHeight * 0.055,
+        borderRadius: windowHeight * 0.055,
     },
 
 });

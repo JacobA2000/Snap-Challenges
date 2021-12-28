@@ -29,7 +29,7 @@ const TopBar = ()  => {
 const styles = StyleSheet.create({
     topbarContainer: {
         width: windowWidth,
-        height: windowHeight * 0.1,
+        height: windowHeight * 0.075,
         backgroundColor: altColor1,
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -47,8 +47,8 @@ const styles = StyleSheet.create({
     },
 
     topbarNotificationButton: {
-        width: windowHeight * 0.075,
-        height: windowHeight * 0.075,
+        width: windowHeight * 0.05,
+        height: windowHeight * 0.05,
         backgroundColor: altColor2,
         borderRadius: windowHeight * 0.1,
         justifyContent: 'center',
@@ -56,8 +56,8 @@ const styles = StyleSheet.create({
     },
 
     topbarNotificationButtonImage: {
-        width: windowHeight * 0.075,
-        height: windowHeight * 0.075,
+        width: windowHeight * 0.05,
+        height: windowHeight * 0.05,
         resizeMode: 'contain',
     },
 

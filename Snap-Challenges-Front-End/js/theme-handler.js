@@ -13,13 +13,13 @@ if (colorScheme === 'dark') {
     backgroundColor = '#1E1E1E'
     textColor = '#FFFFFF'
     altColor1 = '#9500FF'
-    altColor2 = '#AE24FF'
+    altColor2 = '#B54DFF'
     statusBarTheme = "light"
 } 
 else if (colorScheme === 'light') {
     backgroundColor = '#FFFFFF'
     textColor = '#1E1E1E'
     altColor1 = '#9500FF'
-    altColor2 = '#AE24FF'
+    altColor2 = '#B54DFF'
     statusBarTheme = "dark"
 }
