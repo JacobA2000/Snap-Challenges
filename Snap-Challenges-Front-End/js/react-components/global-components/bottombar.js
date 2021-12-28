@@ -1,4 +1,5 @@
 // REACT IMPORTS
+import { AuthError } from 'expo-auth-session';
 import React from 'react';
 import { 
   Dimensions, 
@@ -41,9 +42,6 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 10,
-
-        position: 'absolute',
-        bottom: 0,
     },
 
     bottomBarNavList: {
