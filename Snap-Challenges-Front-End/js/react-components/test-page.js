@@ -18,6 +18,7 @@ import GlobalStyles from '../global-styles.js';
 import { statusBarTheme } from '../theme-handler.js';
 
 import TopBar from './global-components/topbar.js';
+import BottomBar from './global-components/bottombar.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -28,6 +29,7 @@ const TestPage = ()  => {
         <StatusBar style={ statusBarTheme } />
         <TopBar />
         <Image style={GlobalStyles.avatarImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}} />
+        <BottomBar />
     </SafeAreaView>
   );
 }

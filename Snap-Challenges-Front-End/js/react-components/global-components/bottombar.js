@@ -14,20 +14,26 @@ import { altColor1, altColor2 } from '../../theme-handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const TopBar = ()  => {
+const BottomBar = ()  => {
   return (
-    <View style={styles.topbarContainer}>
-        <Image style={styles.topbarLogo} source={require('../../../assets/snap-challenges-logos/text-logo.png')} />
-
-        <TouchableOpacity style={styles.topbarNotificationButton} title="Notification" onPress={() => {alert("TEST")}}>
-            <Image style={styles.topbarNotificationButtonImage}source={require('../../../assets/menu-icons/bell-icon.png')}/>
-        </TouchableOpacity> 
+    <View style={styles.bottomBarContainer}>
+        <View style={styles.bottomBarNavList}>
+            <TouchableOpacity style={styles.bottomBarNavButton} title="Challenges" onPress={() => {alert("CHALLENGE")}}>
+                <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/challenge-icon.png')}/>
+            </TouchableOpacity> 
+            <TouchableOpacity style={styles.bottomBarNavButton} title="Badges" onPress={() => {alert("BADGE")}}>
+                <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/badge-icon.png')}/>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.bottomBarNavButton} title="Profile" onPress={() => {alert("PROFILE")}}>
+                <Image style={styles.bottomBarNavButtonProfileImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}}/>
+            </TouchableOpacity>
+        </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-    topbarContainer: {
+    bottomBarContainer: {
         width: windowWidth,
         height: windowHeight * 0.1,
         backgroundColor: altColor1,
@@ -35,32 +41,39 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 10,
+
+        position: 'absolute',
+        bottom: 0,
     },
 
-    topbarLogo: {
-        width: windowHeight * 0.25,
+    bottomBarNavList: {
+        width: "100%",
         height: "100%",
-
-        resizeMode: 'contain',
-
-        left: 0,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
 
-    topbarNotificationButton: {
+    bottomBarNavButton: {
         width: windowHeight * 0.075,
         height: windowHeight * 0.075,
+        borderRadius: windowHeight * 0.075,
         backgroundColor: altColor2,
-        borderRadius: windowHeight * 0.1,
         justifyContent: 'center',
         alignItems: 'center',
     },
 
-    topbarNotificationButtonImage: {
-        width: windowHeight * 0.075,
-        height: windowHeight * 0.075,
-        resizeMode: 'contain',
+    bottomBarNavButtonImage: {
+        width: windowHeight * 0.05,
+        height: windowHeight * 0.05,
+    },
+
+    bottomBarNavButtonProfileImage: {
+        width: windowHeight * 0.07,
+        height: windowHeight * 0.07,
+        borderRadius: windowHeight * 0.07,
     },
 
 });
 
-export default TopBar;
+export default BottomBar;
