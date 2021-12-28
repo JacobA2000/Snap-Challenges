@@ -11,14 +11,15 @@ import {
 
 // STYLE IMPORTS
 import GlobalStyles from '../global-styles.js';
-import { colorScheme, backgroundColor, textColor, altColor1, altColor2 } from '../theme-handler.js';
+import { textColor, altColor1, statusBarTheme } from '../theme-handler.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const SignUpDetailsForm = ()  => {
+const SignUp = ()  => {
   return (
-    <View style={GlobalStyles.container}>
+    <View style={GlobalStyles.centeredContainer}>
+        <StatusBar style={statusBarTheme} />
         <Text style={styles.tagLine}>SIGN UP DETAILS!</Text>
         <Image style={GlobalStyles.avatarImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}} />
         <TextInput style={styles.textInput} placeholder="First Name" />
@@ -46,7 +47,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 10,
 
-    placeholderTextColor: textColor,
+    //placeholderTextColor: textColor,
   },
 
   tagLine: {
@@ -61,4 +62,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default SignUpDetailsForm;
+export default SignUp;

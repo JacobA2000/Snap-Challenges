@@ -1,27 +1,28 @@
 // REACT IMPORTS
 import React from 'react';
-import { Dimensions, View } from 'react-native';
 
 // RERACT NAVIGATION IMPORTS
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-// STYLE IMPORTS
-import GlobalStyles from './js/global-styles.js';
-
-// COMPONENT IMPORTS
-import Login from './js/react-components/login.js';
-import SignUpDetailsForm from './js/react-components/sign-up-details-form.js';
+// PAGE COMPONENT IMPORTS
+import Login from './js/react-components/login-page.js';
+import SignUp from './js/react-components/sign-up-page.js';
+import TestPage from './js/react-components/test-page.js';
 
 const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-        <Stack.Screen name="SignUpDetailsForm" component={SignUpDetailsForm} options={{ headerShown: false }} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="TestP">
+          <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+          <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
+          <Stack.Screen name="TestP" component={TestPage} options={{ headerShown: false }} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

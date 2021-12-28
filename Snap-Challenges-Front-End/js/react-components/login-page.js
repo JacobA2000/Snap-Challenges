@@ -1,10 +1,10 @@
 // REACT IMPORTS
 import React from 'react';
-import { Dimensions, StyleSheet, Text, View, TouchableOpacity , Image } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity , Image } from 'react-native';
 
 // STYLE IMPORTS
 import GlobalStyles from '../global-styles.js';
-import { colorScheme, backgroundColor, textColor, altColor1, altColor2 } from '../theme-handler.js';
+import { textColor, statusBarTheme } from '../theme-handler.js';
 
 // EXPO IMPORTS
 import * as WebBrowser from 'expo-web-browser';
@@ -43,13 +43,14 @@ const Login = ({ navigation })  => {
   }, [response]);
 
   return (
-    <View style={GlobalStyles.container}>
+    <SafeAreaView style={GlobalStyles.centeredContainer}>
+        <StatusBar style={statusBarTheme} />
         <Image style={styles.logo} source={require('../../assets/snap-challenges-logos/small-logo.png')} />
         <Text style={styles.tagLine}>A COLLABORATIVE PHOTOGRPAHY EXPERIENCE</Text>
         <TouchableOpacity style={styles.loginButton} disabled={!request} title="Login" onPress={() => {promptAsync();}}>
             <Image style={styles.googleLoginImage}source={require('../../assets/google-sign-in-buttons/btn_google_signin_dark_normal_web.png')}/>
         </TouchableOpacity>     
-    </View>
+    </SafeAreaView>
   );
 }
 
