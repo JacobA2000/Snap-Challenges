@@ -9,6 +9,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 // PAGE COMPONENT IMPORTS
 import Login from './js/react-components/login-page.js';
 import SignUp from './js/react-components/sign-up-page.js';
+import Profile from './js/react-components/profile-page.js';
+
 import TestPage from './js/react-components/test-page.js';
 
 const Stack = createNativeStackNavigator();
@@ -17,9 +19,12 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <NavigationContainer>
-        <Stack.Navigator initialRouteName="TestP">
+        <Stack.Navigator initialRouteName="Profile">
           <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
           <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
+          <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
+
+          {/* TEST PAGE FOR DEBUGGING PURPOSES ONLY - REMOVE BEFORE RELEASE */}
           <Stack.Screen name="TestP" component={TestPage} options={{ headerShown: false }} />
         </Stack.Navigator>
       </NavigationContainer>

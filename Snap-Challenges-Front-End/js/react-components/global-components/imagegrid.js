@@ -6,24 +6,30 @@ import {
     View,
     ScrollView, 
     Image,
-    TouchableOpacity
+    TouchableOpacity,
+    Text
 } from 'react-native';
 
 // STYLE IMPORTS
-import { altColor1 } from '../../theme-handler.js';
+import { altColor1, textColor } from '../../theme-handler.js';
 
 const windowWidth = Dimensions.get('window').width;
-const windowHeight = Dimensions.get('window').height;
 
 const ImageGrid = ({images})  => {
 
     let imageGrid = [];
 
-    for(let i = 0; i < images.length; i++) {
+    if(images.length > 0) {
+        for(let i = 0; i < images.length; i++) {
+            imageGrid.push(
+                <TouchableOpacity key={i} style={styles.imageGridItem} onPress={() => alert(i)}>
+                    <Image style={styles.imageGridImage} source={{uri: images[i]}} />
+                </TouchableOpacity>
+            );
+        }
+    } else {
         imageGrid.push(
-            <TouchableOpacity key={i} style={styles.imageGridItem} onPress={() => alert(i)}>
-                <Image style={styles.imageGridImage} source={{uri: images[i]}} />
-            </TouchableOpacity>
+            <Text style={styles.noImageText}> NO IMAGES POSTED YET </Text>
         );
     }
 
@@ -61,6 +67,15 @@ const styles = StyleSheet.create({
         height: windowWidth * 0.3,
         resizeMode: 'cover',
     },
+
+    noImageText: {
+        color: textColor, 
+        fontFamily: "Roboto", 
+        fontSize: 20,
+        fontWeight: "bold",
+
+        textAlign: "center",
+    }
 });
 
 export default ImageGrid;

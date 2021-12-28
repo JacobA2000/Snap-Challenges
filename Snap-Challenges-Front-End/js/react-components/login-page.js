@@ -9,6 +9,9 @@ import { textColor, statusBarTheme } from '../theme-handler.js';
 // EXPO IMPORTS
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
+import { StatusBar } from 'expo-status-bar';
+
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // MY IMPORTS
 import { GoogleApi } from '../google-api-handler.js';

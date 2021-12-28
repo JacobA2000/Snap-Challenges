@@ -13,19 +13,22 @@ import {
 import GlobalStyles from '../global-styles.js';
 import { textColor, altColor1, statusBarTheme } from '../theme-handler.js';
 
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const SignUp = ()  => {
   return (
-    <View style={GlobalStyles.centeredContainer}>
+    <SafeAreaView style={GlobalStyles.centeredContainer}>
         <StatusBar style={statusBarTheme} />
         <Text style={styles.tagLine}>SIGN UP DETAILS!</Text>
         <Image style={GlobalStyles.avatarImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}} />
         <TextInput style={styles.textInput} placeholder="First Name" />
         <TextInput style={styles.textInput} placeholder="Last Name" />
         <TextInput style={styles.textInput} placeholder="Email" />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -46,8 +49,6 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
     fontWeight: 'bold',
     padding: 10,
-
-    //placeholderTextColor: textColor,
   },
 
   tagLine: {
