@@ -1,7 +1,8 @@
 #region: IMPORTS
 # Using flask to build and run the webserver
 from datetime import datetime
-from flask import Flask
+from enum import unique
+from flask import Flask, request, jsonify
 # Using flask_restful to create the API
 from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with, inputs
 # Using SQLAlchemy to handle database and control SQL queries. 
@@ -9,19 +10,23 @@ from flask_restful import Api, Resource, reqparse, abort, fields, marshal_with, 
 from flask_sqlalchemy import SQLAlchemy
 import configparser
 from os import path
+
+import uuid
+from werkzeug.security import generate_password_hash, check_password_hash
 #endregion
 
 #region: Initialization
-# CREATING THE FLASK APP
-app = Flask(__name__)
-# CREATING THE API
-api = Api(app)
-
 # READING THE CONFIG FILE
 config_parser = configparser.RawConfigParser()   
 thisfolder = path.dirname(path.abspath(__file__))
 config_file = path.join(thisfolder, 'config.cfg')
 config_parser.read(config_file)
+
+# CREATING THE FLASK APP
+app = Flask(__name__)
+app.config['SECRET_KEY'] = config_parser.get('flask-api', 'secret_key')
+# CREATING THE API
+api = Api(app)
 #endregion
 
 #region: Database Handling
@@ -106,6 +111,7 @@ class UserModel(db.Model):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
+    public_id = db.Column(db.String(50), nullable=False, unique=True)
     username = db.Column(db.String(20), nullable=False)
     country_id = db.Column(db.Integer, db.ForeignKey("countries.id"), nullable=False)
     email = db.Column(db.String(320), nullable=False)
@@ -178,7 +184,7 @@ class UserHasPostsModel(db.Model):
     def __repr__(self) -> str:
         return f"UserHasPosts(user_id={self.user_id}, post_id={self.post_id})"
 
-# IF RAN WILL OVERWRITE EXISTING DB 
+# IF RAN MAY OVERWRITE EXISTING DB 
 # db.create_all()
 
 #endregion
@@ -314,7 +320,8 @@ user_put_args.add_argument("is_admin", type=bool, required=False, help="is_admin
 
 # RESOURCE FIELDS FOR USER
 user_resource_fields= {
-    "id": fields.Integer,
+    #"id": fields.Integer,
+    "public_id": fields.String,
     "username": fields.String,
     "country_id": fields.Integer,
     "email": fields.String,
@@ -324,15 +331,15 @@ user_resource_fields= {
 }
 class User(Resource):
     @marshal_with(user_resource_fields)
-    def get(self, user_id) -> dict:
+    def get(self, public_user_id) -> dict:
         """
         Handles GET requests sent to the api for users.
         """
-        user = UserModel.query.filter_by(id=user_id).first()
+        user = UserModel.query.filter_by(public_id=public_user_id).first()
         return user, 200
     
     @marshal_with(user_resource_fields)
-    def post(self, user_id) -> dict:
+    def post(self) -> dict:
         """
         Handles POST requests sent to the api for photos.
         Used to create data on the server.
@@ -340,7 +347,7 @@ class User(Resource):
         args = user_post_args.parse_args()
         
         user = UserModel(
-            id=user_id, 
+            public_id=str(uuid.uuid4()),
             **args
         )
 
@@ -351,7 +358,7 @@ class User(Resource):
         return user, 201
 
     @marshal_with(user_resource_fields)
-    def put(self, user_id) -> dict:
+    def put(self, public_user_id) -> dict:
         """
         Handles PUT requests sent to the api for users.
         Used to update data on the server.
@@ -360,14 +367,14 @@ class User(Resource):
 
         # Get the photo info sent to the api.
         updated_user = UserModel(
-            id=user_id, 
+            public_id=public_user_id, 
             **args
         )
         
-        user = UserModel.query.filter_by(id=user_id).one_or_none()
+        user = UserModel.query.filter_by(public_id=public_user_id).one_or_none()
 
         if user is None:
-            abort(404, message=f"User with id: {user_id} not found")
+            abort(404, message=f"User with id: {public_user_id} not found")
         else:
             # Update the photo in the database.
             user.username = updated_user.username if updated_user.username != None else user.username
@@ -381,21 +388,21 @@ class User(Resource):
             # Return the 204 HTTP Code to indicate that the resource has been updated.
             return '', 204
 
-    def delete(self, user_id) -> str:
+    def delete(self, public_user_id) -> str:
         """
         Handles DELETE requests sent to the api for users.
         """
 
-        user = UserModel.query.filter_by(id=user_id).one_or_none()
+        user = UserModel.query.filter_by(public_id=public_user_id).one_or_none()
         if user is None:
-            abort(404, message=f"User with id: {user_id} not found")
+            abort(404, message=f"User with id: {public_user_id} not found")
         else:
             db.session.delete(user)
             db.session.commit()
             # Return the 204 HTTP Code to indicate that the resource has been deleted.
             return '', 204
 
-api.add_resource(User, "/api/user/<int:user_id>")
+api.add_resource(User, "/api/user/<string:public_user_id>", endpoint='user')
 #endregion
 #region: COUNTRY API ENDPOINT
 country_post_args = reqparse.RequestParser()

@@ -22,7 +22,7 @@ country_data = {
     "flag_url": "test"
 }
 
-user_endpoint = 'http://127.0.0.1:5000/api/user/1'
+user_endpoint = 'http://127.0.0.1:5000/api/user/'
 user_data = {
     "username": "Hypezz12",
     'country_id': 1,
@@ -31,6 +31,7 @@ user_data = {
     "bio": "test",
     "is_admin": True
 }
+user_public_id = ''
 
 challenge_endpoint = 'http://127.0.0.1:5000/api/challenge/1'
 challenge_data = {
@@ -74,7 +75,8 @@ class TestSequence1POSTRequests(unittest.TestCase):
     def test_3_user(self):
         response = requests.post(user_endpoint, data=user_data)
         self.assertEqual(response.status_code, 201, "URL should respond with code 201.")
-        self.assertEqual(response.json(), {"id":1, **user_data}, "Data should be equal.")
+        user_public_id = response.json()['public_id']
+        self.assertEqual(response.json(), {"public_id":user_public_id, **user_data}, "Data should be equal.")
     
     def test_4_challenge(self):
         response = requests.post(challenge_endpoint, data=challenge_data)
@@ -103,9 +105,9 @@ class TestSequence2GETRequests(unittest.TestCase):
         self.assertEqual(response.json(), {"id":1, **country_data}, "Data should be equal.")
 
     def test_3_user(self):
-        response = requests.get(user_endpoint)
+        response = requests.get(f"{user_endpoint}/{user_public_id}")
         self.assertEqual(response.status_code, 200, "URL should respond with code 200.")
-        self.assertEqual(response.json(), {"id":1, **user_data}, "Data should be equal.")
+        self.assertEqual(response.json(), {"public_id":user_public_id, **user_data}, "Data should be equal.")
     
     def test_4_challenge(self):
         response = requests.get(challenge_endpoint)
