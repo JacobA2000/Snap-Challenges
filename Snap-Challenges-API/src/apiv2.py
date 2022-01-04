@@ -2,13 +2,18 @@
 
 #region: IMPORTS
 # Using flask to build and run the webserver
-from datetime import datetime
+import datetime
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, make_response
 
 # Using SQLAlchemy to handle database and control SQL queries. 
 # It will sanitizes the queries by default
 from flask_sqlalchemy import SQLAlchemy
+
+# SECURITY
+from werkzeug.security import generate_password_hash, check_password_hash
+import jwt
+from functools import wraps
 
 import configparser
 
@@ -168,6 +173,7 @@ class UserModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     public_id = db.Column(db.String(50), nullable=False, unique=True)
     username = db.Column(db.String(20), nullable=False)
+    password = db.Column(db.String(256), nullable=False)
     country_id = db.Column(db.Integer, db.ForeignKey("countries.id"), nullable=False)
     email = db.Column(db.String(320), nullable=False)
     avatar_url = db.Column(db.String(200), nullable=True)
@@ -312,14 +318,39 @@ class UserHasPostsModel(db.Model):
         }
 
 # IF RAN MAY OVERWRITE EXISTING DB 
-# db.create_all()
+#db.create_all()
 
 #endregion
 
 #region: API
+
+#region: TOKEN VALIDATOR WRAPPER
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = None
+
+        if 'x-access-token' in request.headers:
+            token = request.headers['x-access-token']
+
+        if not token:
+            return jsonify({'message': 'Token is missing'}), 401
+
+        try:
+            data = jwt.decode(token, app.config['SECRET_KEY'])
+            current_user = UserModel.query.filter_by(public_id=data['public_id']).first()
+        except:
+            return jsonify({'message': 'Token is invalid'}), 401
+
+        return f(current_user, *args, **kwargs)
+    
+    return decorated
+#endregion
+
 #region: COUNTRY API ENDPOINT
 @app.route("/api/countries", methods=["GET"])
-def get_countries():
+@token_required
+def get_countries(current_user):
     """
     Returns a list of all countries.
     """
@@ -327,7 +358,8 @@ def get_countries():
     return jsonify(countries=[country.serialize() for country in countries]), 200
 
 @app.route("/api/countries/<int:country_id>", methods=["GET"])
-def get_country(country_id):
+@token_required
+def get_country(current_user, country_id):
     """
     Returns a country with a specific id.
     """
@@ -335,7 +367,8 @@ def get_country(country_id):
     return jsonify(country.serialize()), 200
 
 @app.route("/api/countries", methods=["POST"])
-def create_country():
+@token_required
+def create_country(current_user):
     """
     This function creates a new country.
     """
@@ -348,7 +381,9 @@ def create_country():
 
     # Create the country
     country = CountryModel(
-        **data
+        name=data["name"],
+        code=data["code"],
+        flag_url=data["flag_url"]
     )
 
     # Add the country to the database
@@ -359,7 +394,8 @@ def create_country():
     return jsonify(country.serialize()), 201
 
 @app.route("/api/countries/<int:country_id>", methods=["PUT"])
-def update_country(country_id):
+@token_required
+def update_country(current_user, country_id):
     """
     This function updates a country.
     """
@@ -373,15 +409,10 @@ def update_country(country_id):
     # Get the country
     country = CountryModel.query.get(country_id)
 
-    print(data)
-
     # Update the country
-    if "name" in data.keys():
-        country.name = data["name"] if data["name"] != None else country.name
-    if "code" in data.keys():
-        country.code = data["code"] if data["code"] != None else country.code
-    if "flag_url" in data.keys():
-        country.flag_url = data["flag_url"] if data["flag_url"] != None else country.flag_url
+    country.name = data["name"] if ("name" in data.keys()) and (data["name"] != None) else country.name
+    country.code = data["code"] if ("code" in data.keys()) and (data["code"] != None) else country.code
+    country.flag_url = data["flag_url"] if ("flag_url" in data.keys()) and (data["flag_url"] != None) else country.flag_url
     
     # Add the country to the database
     db.session.commit()
@@ -390,7 +421,8 @@ def update_country(country_id):
     return jsonify(country.serialize()), 204
 
 @app.route("/api/countries/<int:country_id>", methods=["DELETE"])
-def delete_country(country_id):
+@token_required
+def delete_country(current_user, country_id):
     """
     This function deletes a country.
     """
@@ -402,21 +434,25 @@ def delete_country(country_id):
     db.session.commit()
 
     # Return a success message
-    return 204
-
+    return "", 204
 
 #endregion
 #region: USER API ENDPOINT
 @app.route("/api/users", methods=["GET"])
-def get_users():
+@token_required
+def get_users(current_user):
     """
     Returns a list of all users.
     """
+    if not current_user.is_admin:
+        return jsonify({"message": "Cannot perform that function!"}), 401
+
     users = UserModel.query.all()
     return jsonify(users=[user.serialize() for user in users]), 200
 
 @app.route("/api/users/<string:user_public_id>", methods=["GET"])
-def get_single_user(user_public_id):
+@token_required
+def get_single_user(current_user, user_public_id):
     """
     This function returns a single user.
     """
@@ -432,7 +468,8 @@ def get_single_user(user_public_id):
     return jsonify(user.serialize()), 200
 
 @app.route("/api/users", methods=["POST"])
-def create_user():
+@token_required
+def create_user(current_user):
     """
     This function creates a new user.
     """
@@ -443,10 +480,18 @@ def create_user():
     if not data:
         return jsonify({"message": "No data provided."}), 400
 
+    hashed_password = generate_password_hash(data["password"], method='sha256')
+
     # Create the user
     user = UserModel(
         public_id=str(uuid.uuid4()),
-        **data
+        username = data["username"],
+        password = hashed_password,
+        country_id = data["country_id"],
+        email = data["email"],
+        avatar_url = data["avatar_url"],
+        bio = data["bio"],
+        is_admin = False
     )
 
     # Add the user to the database
@@ -457,7 +502,8 @@ def create_user():
     return jsonify(user.serialize()), 201
 
 @app.route("/api/users/<string:user_public_id>", methods=["PUT"])
-def update_user(user_public_id):
+@token_required
+def update_user(current_user, user_public_id):
     """
     This function updates an existing user.
     """
@@ -477,12 +523,12 @@ def update_user(user_public_id):
         return jsonify({"message": "No data provided."}), 400
 
     # Update the user
-    user.username = data["username"]
-    user.country_id = data["country_id"]
-    user.email = data["email"]
-    user.avatar_url = data["avatar_url"]
-    user.bio = data["bio"]
-    user.is_admin = data["is_admin"]
+    user.username = data["username"] if ("username" in data.keys()) and (data["username"] != None) else user.username
+    user.country_id = data["country_id"] if ("country_id" in data.keys()) and (data["country_id"] != None) else user.country_id
+    user.email = data["email"] if ("email" in data.keys()) and (data["email"] != None) else user.email
+    user.avatar_url = data["avatar_url"] if "avatar_url" in data.keys() else user.avatar_url
+    user.bio = data["bio"] if "bio" in data.keys() else user.bio
+    user.is_admin = data["is_admin"] if ("is_admin" in data.keys()) and (data["is_admin"] != None) else user.is_admin
 
     # Add the user to the database
     db.session.commit()
@@ -491,7 +537,8 @@ def update_user(user_public_id):
     return jsonify(user.serialize()), 204
 
 @app.route("/api/users/<string:user_public_id>", methods=["DELETE"])
-def delete_user(user_public_id):
+@token_required
+def delete_user(current_user, user_public_id):
     """
     This function deletes an existing user.
     """
@@ -508,7 +555,27 @@ def delete_user(user_public_id):
     db.session.commit()
 
     # Return a success code
-    return 204
+    return "", 204
+
+#LOGIN TOKEN ENDPOINT
+@app.route("/api/login")
+def login():
+    auth = request.authorization
+
+    if not auth or not auth.username or not auth.password:
+        return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+    user = UserModel.query.filter_by(username=auth.username).first()
+
+    if not user:
+        return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+
+    if check_password_hash(user.password, auth.password):
+        token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+
+        return jsonify({'token' : token.decode('utf-8')})
+
+    return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
 #endregion
 #endregion

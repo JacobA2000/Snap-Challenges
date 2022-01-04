@@ -1,7 +1,6 @@
 #region: IMPORTS
 import unittest
 import requests
-from datetime import datetime
 #endregion
 
 #region: TEST DATA
@@ -16,6 +15,8 @@ country_id = ''
 user_endpoint = 'http://127.0.0.1:5000/api/users'
 user_data = {
     "username": "Hypezz12",
+    "password": "password",
+    "country_id": "",
     "email": "jacoballen785@gmail.com",
     "avatar_url": "test.testags",
     "bio": "test",
