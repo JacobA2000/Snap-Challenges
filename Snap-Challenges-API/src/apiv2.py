@@ -90,7 +90,7 @@ class PostModel(db.Model):
     id = db.Column(db.Integer, primary_key=True, nullable=False)
     photo_id = db.Column(db.Integer, db.ForeignKey("photos.id"), nullable=False)
     desc = db.Column(db.String(280), nullable=True)
-    posted_at = db.Column(db.TIMESTAMP, nullable=False)
+    posted_at = db.Column(db.TIMESTAMP, nullable=False, server_default=db.func.current_timestamp())
     upvotes = db.Column(db.Integer, nullable=False)
     downvotes = db.Column(db.Integer, nullable=False)
 
@@ -330,7 +330,7 @@ class UserHasPostsModel(db.Model):
 # IF RAN MAY OVERWRITE EXISTING DB 
 #db.create_all()
 
-#IF COUNTRYS ARENT ALREADY ON THE DB
+#IF COUNTRIES ARENT ALREADY ON THE DB
 countries_file_path = path.join(thisfolder, "countries.json")
 if CountryModel.query.count() == 0:
     with open(countries_file_path) as f:
@@ -505,7 +505,7 @@ def create_post(current_user):
     post = PostModel(
         photo_id=data['photo_id'],
         desc = data['desc'],
-        posted_at = data['posted_at'],
+        #posted_at = data['posted_at'],
         upvotes = 0,
         downvotes = 0
     )
