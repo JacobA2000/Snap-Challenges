@@ -1,16 +1,21 @@
-# TODO - ADD VALIDATION TO API REQUESTS
-
 # Using flask to build and run the webserver
 from flask import Flask, request, jsonify, make_response
 
-# Using SQLAlchemy to handle database and control SQL queries. 
-# It will sanitizes the queries by default
-from flask_sqlalchemy import SQLAlchemy
+# DB
+from shared.db import db
+# DB MODELS
+from shared.dbmodels.photo import PhotoModel
+from shared.dbmodels.post import PostModel
+from shared.dbmodels.user import UserModel, UserHasBadgesModel, UserHasChallengesModel, UserHasPostsModel
+from shared.dbmodels.badge import BadgeModel
+from shared.dbmodels.challenge import ChallengeModel, ChallengeHasPostsModel
+from shared.dbmodels.country import CountryModel
 
 # SECURITY
 from werkzeug.security import generate_password_hash, check_password_hash
 import jwt
 
+# PYTHON BUILT-IN IMPORTS
 from functools import wraps
 import configparser
 from os import path
@@ -39,296 +44,12 @@ DB_USER = config_parser.get("mysql-database", "DB_USER")
 DB_PASSWORD = config_parser.get("mysql-database", "DB_PASSWORD")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}"
-db = SQLAlchemy(app)
+app.app_context().push()
 
-# DATABASE MODELS
-# POST DATA RELATED MODELS
-class PhotoModel(db.Model):
-    """
-    The PhotoModel class is the model for the database table 'photos'.
-    """
-    __tablename__ = "photos"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    url = db.Column(db.String(200), nullable=False)
-    camera = db.Column(db.String(50), nullable=True)
-    focal_length = db.Column(db.Integer, nullable=True)
-    aperture = db.Column(db.Float, nullable=True)
-    iso = db.Column(db.Integer, nullable=True)
-    shutter_speed = db.Column(db.String(15), nullable=True)
-    location = db.Column(db.String(50), nullable=True)
-    date_taken = db.Column(db.Date, nullable=True)
-
-    def __repr__(self) -> str:
-        """
-        The __repr__ method is used to print the object.
-        """
-        return f"<PhotoModel(id={self.id}, url={self.url}, camera={self.camera}, focal_length={self.focal_length}, aperture={self.aperture}, iso={self.iso}, shutter_speed={self.shutter_speed}, location={self.location}, date_taken={self.date_taken})>"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "url": self.url,
-            "camera": self.camera,
-            "focal_length": self.focal_length,
-            "aperture": self.aperture,
-            "iso": self.iso,
-            "shutter_speed": self.shutter_speed,
-            "location": self.location,
-            "date_taken": self.date_taken
-        }
-
-class PostModel(db.Model):
-    """
-    The PostModel class is the model for the database table 'posts'.
-    """
-    __tablename__ = "posts"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    photo_id = db.Column(db.Integer, db.ForeignKey("photos.id"), nullable=False)
-    desc = db.Column(db.String(280), nullable=True)
-    posted_at = db.Column(db.TIMESTAMP, nullable=False, server_default=db.func.current_timestamp())
-    upvotes = db.Column(db.Integer, nullable=False)
-    downvotes = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self) -> str:
-        return f"Post(photo_id={self.photo_id}, desc={self.desc}, posted_at={self.posted_at}, upvotes={self.upvotes}, downvotes={self.downvotes})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "photo_id": self.photo_id,
-            "desc": self.desc,
-            "posted_at": self.posted_at,
-            "upvotes": self.upvotes,
-            "downvotes": self.downvotes
-        }
-
-# CHALLENGE DATA RELATED MODELS
-class ChallengeModel(db.Model):
-    """
-    The ChallengeModel class is the model for the database table 'challenges'.
-    """
-    __tablename__ = "challenges"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    title = db.Column(db.String(50), nullable=False)
-    description = db.Column(db.String(280), nullable=False)
-    start_date = db.Column(db.DateTime, nullable=False)
-    end_date = db.Column(db.DateTime, nullable=False)
-    times_completed = db.Column(db.Integer, nullable=False)
-
-    def __repr__(self) -> str:
-        return f"Challenge(title={self.title}, desc={self.desc}, start_date={self.start_date}, end_date={self.end_date}, times_completed={self.times_completed})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "title": self.title,
-            "description": self.description,
-            "start_date": self.start_date,
-            "end_date": self.end_date,
-            "times_completed": self.times_completed
-        }
-
-class ChallengeHasPostsModel(db.Model):
-    """
-    The ChallengeHasPostsModel class is the model for the database table 'challenges_has_posts'.
-    """
-    __tablename__ = "challenges_has_posts"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    challenge_id = db.Column(db.Integer, db.ForeignKey("challenges.id"), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"ChallengeHasPosts(challenge_id={self.challenge_id}, post_id={self.post_id})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "challenge_id": self.challenge_id,
-            "post_id": self.post_id
-        }
-
-# USER DATA RELATED MODELS
-class UserModel(db.Model):
-    """
-    The UserModel class is the model for the database table 'users'.
-    """
-    __tablename__ = "users"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    public_id = db.Column(db.String(50), nullable=False, unique=True)
-    username = db.Column(db.String(20), nullable=False)
-    password = db.Column(db.String(256), nullable=False)
-    email = db.Column(db.String(320), nullable=False)
-    registered_at = db.Column(db.TIMESTAMP, nullable=False)
-    last_login = db.Column(db.TIMESTAMP, nullable=True)
-
-    country_id = db.Column(db.Integer, db.ForeignKey("countries.id"), nullable=True)
-    given_name = db.Column(db.String(50), nullable=False)
-    family_name = db.Column(db.String(50), nullable=False)
-    date_of_birth = db.Column(db.Date, nullable=False)
-
-    avatar_url = db.Column(db.String(200), nullable=True)
-    bio = db.Column(db.String(280), nullable=True)
-    is_admin = db.Column(db.Boolean, nullable=False)
-
-    def __repr__(self) -> str:
-        return f"User(username={self.username}, country_id={self.country_id}, email={self.email}, avatar_url={self.avatar_url}, is_admin={self.is_admin})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "public_id": self.public_id,
-            "username": self.username,
-            "email": self.email,
-            "registered_at": self.registered_at,
-            "last_login": self.last_login,
-            "country_id": self.country_id,
-            "given_name": self.given_name,
-            "family_name": self.family_name,
-            "date_of_birth": self.date_of_birth,
-            "avatar_url": self.avatar_url,
-            "bio": self.bio,
-            "is_admin": self.is_admin
-        }
-
-class CountryModel(db.Model):
-    """
-    The CountryModel class is the model for the database table 'countries'.
-    """
-    __tablename__ = "countries"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String(56), nullable=False)
-    code = db.Column(db.String(2), nullable=False) # ISO 3166-2 code
-
-    def __repr__(self) -> str:
-        return f"Country(name={self.name}, iso3166_2_code={self.code}, flag_url={self.flag_url})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "code": self.code,
-        }
-
-class BadgeModel(db.Model):
-    """
-    The BadgeModel class is the model for the database table 'badges'.
-    """
-    __tablename__ = "badges"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    name = db.Column(db.String(50), nullable=False)
-    desc = db.Column(db.String(280), nullable=False)
-    icon_url = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"Badge(name={self.name}, desc={self.desc}, icon_url={self.icon_url})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "name": self.name,
-            "desc": self.desc,
-            "icon_url": self.icon_url
-        }
-
-class UserHasBadgesModel(db.Model):
-    """
-    The UserHasBadgesModel class is the model for the database table 'user_has_badges'.
-    """
-    __tablename__ = "user_has_badges"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    badge_id = db.Column(db.Integer, db.ForeignKey("badges.id"), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"UserHasBadges(user_id={self.user_id}, badge_id={self.badge_id})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "badge_id": self.badge_id
-        }
-
-class UserHasChallengesModel(db.Model):
-    """
-    The UserHasChallengesModel class is the model for the database table 'user_has_challenges'.
-    """
-    __tablename__ = "user_has_challenges"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    challenge_id = db.Column(db.Integer, db.ForeignKey("challenges.id"), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"UserHasChallenges(user_id={self.user_id}, challenge_id={self.challenge_id})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "challenge_id": self.challenge_id
-        }
-
-class UserHasPostsModel(db.Model):
-    """
-    The UserHasPostsModel class is the model for the database table 'user_has_posts'.
-    """
-    __tablename__ = "user_has_posts"
-
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
-    post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
-
-    def __repr__(self) -> str:
-        return f"UserHasPosts(user_id={self.user_id}, post_id={self.post_id})"
-
-    def serialize(self) -> dict:
-        """
-        The serialize method is used to serialize the object into a dictionary.
-        """
-        return {
-            "id": self.id,
-            "user_id": self.user_id,
-            "post_id": self.post_id
-        }
-
-# IF RAN MAY OVERWRITE EXISTING DB 
-#db.create_all()
+# DB APP INITIALIZATION
+db.init_app(app)
+# DB CREATION - IF RAN MAY OVERWRITE EXISTING DB 
+# db.create_all()
 
 #IF COUNTRIES ARENT ALREADY ON THE DB
 countries_file_path = path.join(thisfolder, "countries.json")
