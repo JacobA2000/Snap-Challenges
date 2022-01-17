@@ -13,7 +13,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Buffer } from "buffer"
+import base64 from 'base-64';
 
 // MY IMPORTS
 // import { GoogleApi } from '../google-api-handler.js';
@@ -38,14 +38,14 @@ const Login = ({ navigation })  => {
   function handleLoginButtonClick() {
     alert("Username = " + username + " Password = " + password);
 
-    fetch('http://localhost:3000/api/login', {
+    fetch('http://localhost:5000/api/login', {
       method: 'GET',
-      headers: new Headers({
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Basic ' + Buffer.from(username + ':' + password, 'base64')
-      })
+        'Authorization': 'Basic ' + base64.encode(username + ':' + password)
+      }
     }).then(response => {
-      console.log(response);
+      console.log(response.json());
     });
 
   }
