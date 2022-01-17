@@ -24,6 +24,8 @@ import datetime
 import time
 import json
 
+from flask_cors import CORS
+
 #region: Initialization
 # READING THE CONFIG FILE
 config_parser = configparser.RawConfigParser()   
@@ -45,6 +47,9 @@ DB_PASSWORD = config_parser.get("mysql-database", "DB_PASSWORD")
 
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}"
 app.app_context().push()
+
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 # DB APP INITIALIZATION
 db.init_app(app)
