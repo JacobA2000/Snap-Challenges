@@ -26,5 +26,6 @@ export default StyleSheet.create({
         width: windowHeight * 0.15,
         
         borderRadius: 100,
-    }
+    },
+
 });
