@@ -47,7 +47,6 @@ const Login = ({ navigation })  => {
     }).then(response => {
       console.log(response.json());
     });
-
   }
 
   function handleSignUpButtonClick() {
