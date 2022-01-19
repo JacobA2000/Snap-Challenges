@@ -7,12 +7,18 @@ import {
   View, 
   TextInput,
   Image,
-  Platform
+  Platform,
+  Button,
+  TouchableHighlight,
 } from 'react-native';
 
 import countriesJSON from '../../assets/countries.json';
 
 import DropDownPicker from 'react-native-dropdown-picker';
+
+import DateTimePickerModal from "react-native-modal-datetime-picker";
+
+import HideableView from './global-components/hideableview';
 
 // STYLE IMPORTS
 import GlobalStyles from '../global-styles.js';
@@ -26,26 +32,32 @@ const windowHeight = Dimensions.get('window').height;
 
 const SignUp = ()  => {
 
+  // DROP DOWN PICKER
   let data = '';
   const countriesItemsList = countriesJSON.map(i => (
      data = {label: i.Name, value: i.Code}
   ));
-
   const [countriesOpen, setCountriesOpen] = React.useState(false);
   const [selectedCountry, setSelectedCountry] = React.useState(null);
   const [countries, setCountries] = React.useState(countriesItemsList);
 
-  const [daysOpen, setDaysOpen] = React.useState(false);
-  const [selectedDay, setSelectedDay] = React.useState(null);
-  const [days, setDays] = React.useState(daysItemsList);
+  // DATE PICKER
+  let currentDate = new Date();
+  const [isDatePickerVisible, setDatePickerVisibility] = React.useState(false);
+  const [selectedDOB, setSelectedDOB] = React.useState(null);
 
-  const [monthsOpen, setMonthsOpen] = React.useState(false);
-  const [selectedMonth, setSelectedMonth] = React.useState(null);
-  const [months, setMonths] = React.useState(monthsItemsList);
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
 
-  const [yearsOpen, setYearsOpen] = React.useState(false);
-  const [selectedYear, setSelectedYear] = React.useState(null);
-  const [years, setYears] = React.useState(yearsItemsList);
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    setSelectedDOB(date);
+    hideDatePicker();
+  };
 
   return (
     <SafeAreaView style={GlobalStyles.centeredContainer}>
@@ -62,62 +74,22 @@ const SignUp = ()  => {
             <TextInput style={styles.signupTextBox} placeholder="Password" secureTextEntry={true} placeholderTextColor={textColor} />
             <TextInput style={styles.signupTextBox} placeholder="Confirm Password" secureTextEntry={true} placeholderTextColor={textColor}  />
           </View>
-          
-          <DropDownPicker
-            open={daysOpen}
-            value={selectedDay}
-            items={days}
-            setOpen={setDaysOpen}
-            setValue={setSelectedDay}
-            setItems={setDays}
 
-            containerStyle={styles.dropDownContainer}
-            listItemContainerStyle={styles.dropDownListItemContainer}
-            listItemLabelStyle={styles.dropDownListItemLabel}
-            textStyle={styles.dropDownText}
+          <HideableView visible={Platform.OS === 'android' || Platform.OS === 'ios' ? true : false}>
+       
+            <TouchableHighlight style={styles.dobTextBox} onPress={showDatePicker}>
+              <Text style={styles.dobText}>DOB: {selectedDOB !== null ? selectedDOB.toLocaleDateString() : 'Select a Date'}</Text>
+            </TouchableHighlight>
+            
+            <DateTimePickerModal
+              isVisible={isDatePickerVisible}
+              mode="date"
+              onConfirm={handleConfirm}
+              onCancel={hideDatePicker}
+              style={styles.datePicker}
+            />
+          </HideableView>
 
-            placeholder="Day"
-
-            zIndex={4000}
-            zIndexInverse={1000}
-          />
-          <DropDownPicker
-            open={monthsOpen}
-            value={selectedMonth}
-            items={months}
-            setOpen={setMonthsOpen}
-            setValue={setSelectedMonth}
-            setItems={setMonths}
-
-            containerStyle={styles.dropDownContainer}
-            listItemContainerStyle={styles.dropDownListItemContainer}
-            listItemLabelStyle={styles.dropDownListItemLabel}
-            textStyle={styles.dropDownText}
-
-            placeholder="Month"
-
-            zIndex={3000}
-            zIndexInverse={2000}
-          />
-          <DropDownPicker
-            open={yearsOpen}
-            value={selectedYear}
-            items={years}
-            setOpen={setYearsOpen}
-            setValue={setSelectedYear}
-            setItems={setYears}
-
-            containerStyle={styles.dropDownContainer}
-            listItemContainerStyle={styles.dropDownListItemContainer}
-            listItemLabelStyle={styles.dropDownListItemLabel}
-            textStyle={styles.dropDownText}
-
-            placeholder="Year"
-
-            zIndex={2000}
-            zIndexInverse={3000}
-          />
-          
           <DropDownPicker
             open={countriesOpen}
             value={selectedCountry}
@@ -166,7 +138,34 @@ const styles = StyleSheet.create({
     borderColor: altColor1,
     backgroundColor: backgroundColor,
     color: textColor,
-    fontSize: 20,
+    fontSize: 15,
+    fontFamily: 'Roboto',
+    paddingLeft: 10,
+    paddingRight: 10,
+
+    margin: 5,
+  },
+
+  dobText: {
+    fontSize: 15,
+    fontFamily: 'Roboto',
+    color: textColor,
+  },
+
+  dobTextBox: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+
+    height: windowHeight * 0.075,
+    width: windowWidth * 0.4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: altColor1,
+    backgroundColor: backgroundColor,
+    color: textColor,
+    fontSize: 15,
     fontFamily: 'Roboto',
     paddingLeft: 10,
     paddingRight: 10,
@@ -213,6 +212,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
+
+  datePicker: {
+    width: 0,
+    height: 0,
+  },
+
 });
 
 export default SignUp;
