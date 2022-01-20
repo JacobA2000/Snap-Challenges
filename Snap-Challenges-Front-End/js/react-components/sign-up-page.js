@@ -13,11 +13,8 @@ import {
 } from 'react-native';
 
 import countriesJSON from '../../assets/countries.json';
-
 import DropDownPicker from 'react-native-dropdown-picker';
-
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-
 import HideableView from './global-components/hideableview';
 
 // STYLE IMPORTS
@@ -38,13 +35,20 @@ const SignUp = ()  => {
      data = {label: i.Name, value: i.Code}
   ));
   const [countriesOpen, setCountriesOpen] = React.useState(false);
-  const [selectedCountry, setSelectedCountry] = React.useState(null);
   const [countries, setCountries] = React.useState(countriesItemsList);
 
   // DATE PICKER
-  let currentDate = new Date();
   const [isDatePickerVisible, setDatePickerVisibility] = React.useState(false);
+
+  // USER DATA STATES
+  const [firstName, setFirstName] = React.useState(null);
+  const [lastName, setLastName] = React.useState(null);
+  const [email, setEmail] = React.useState(null);
+  const [username, setUsername] = React.useState(null);
+  const [password, setPassword] = React.useState(null);
+  const [passwordConf, setPasswordConf] = React.useState(null);
   const [selectedDOB, setSelectedDOB] = React.useState(null);
+  const [selectedCountry, setSelectedCountry] = React.useState(null);
 
   const showDatePicker = () => {
     setDatePickerVisibility(true);
@@ -59,20 +63,63 @@ const SignUp = ()  => {
     hideDatePicker();
   };
 
+  // SIGN UP BUTTON CLICK
+  function handleSignupButtonClick() {
+    console.log('Sign Up Successful!' + '\n' + 'First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
+    
+    let country_id = null;
+
+    fetch ('http://localhost:5000/api/countries/code/' + selectedCountry, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+    .then(response => {
+      country_id = response.json().id;
+    })
+    .catch(error => {
+      console.log(error);
+    });
+
+    fetch ('http://localhost:5000/register', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username,
+        password: password,
+        email: email,
+        country_id: country_id,
+        given_name: firstName,
+        family_name: lastName,
+        date_of_birth: selectedDOB,
+      })
+    })
+    .then(response => {
+      console.log(response);
+    })
+    .catch(error => {
+      console.log(error);
+    });
+  }
+
   return (
     <SafeAreaView style={GlobalStyles.centeredContainer}>
         <StatusBar style={statusBarTheme} />
         <Text style={styles.tagLine}>SIGN UP!</Text>
         <View style={styles.inputContainer}>
           <View style={styles.rowInputs}>
-            <TextInput style={styles.signupTextBox} placeholder="First Name" placeholderTextColor={textColor} />
-            <TextInput style={styles.signupTextBox} placeholder="Last Name" placeholderTextColor={textColor} />
+            <TextInput style={styles.signupTextBox} placeholder="First Name" placeholderTextColor={textColor} onChangeText={firstName => setFirstName(firstName)}/>
+            <TextInput style={styles.signupTextBox} placeholder="Last Name" placeholderTextColor={textColor} onChangeText={lastName => setLastName(lastName)} />
           </View>
-          <TextInput style={styles.signupTextBox} placeholder="Email" placeholderTextColor={textColor} />
-          <TextInput style={styles.signupTextBox} placeholder="Username" placeholderTextColor={textColor} />
+          <TextInput style={styles.signupTextBox} placeholder="Email" placeholderTextColor={textColor} onChangeText={email => setEmail(email)} />
+          <TextInput style={styles.signupTextBox} placeholder="Username" placeholderTextColor={textColor} onChangeText={username => setUsername(username)}/>
           <View style={styles.rowInputs}>
-            <TextInput style={styles.signupTextBox} placeholder="Password" secureTextEntry={true} placeholderTextColor={textColor} />
-            <TextInput style={styles.signupTextBox} placeholder="Confirm Password" secureTextEntry={true} placeholderTextColor={textColor}  />
+            <TextInput style={styles.signupTextBox} placeholder="Password" secureTextEntry={true} placeholderTextColor={textColor} onChangeText={password => setPassword(password)} />
+            <TextInput style={styles.signupTextBox} placeholder="Confirm Password" secureTextEntry={true} placeholderTextColor={textColor} onChangeText={passwordConf => setPasswordConf(passwordConf)} />
           </View>
 
           <HideableView visible={Platform.OS === 'android' || Platform.OS === 'ios' ? true : false}>
@@ -88,6 +135,10 @@ const SignUp = ()  => {
               onCancel={hideDatePicker}
               style={styles.datePicker}
             />
+          </HideableView>
+          
+          <HideableView visible={Platform.OS === 'android' || Platform.OS === 'ios' ? false : true}>
+            <TextInput style={styles.signupTextBox} placeholder="DOB" placeholderTextColor={textColor} />
           </HideableView>
 
           <DropDownPicker
@@ -105,11 +156,16 @@ const SignUp = ()  => {
 
             placeholder="Country"
 
+            showArrowIcon={false}
+            showTickIcon={false}
+
             zIndex={1000}
             zIndexInverse={4000}
           />
-        
         </View>
+        <TouchableHighlight style={styles.signupButton} onPress={() => handleSignupButtonClick()}>
+          <Text style={styles.signupButtonText}>SIGN UP</Text>
+        </TouchableHighlight>
     </SafeAreaView>
   );
 }
@@ -211,6 +267,9 @@ const styles = StyleSheet.create({
     fontFamily: 'Roboto',
     fontSize: 15,
     fontWeight: 'bold',
+
+    paddingLeft: 10,
+    paddingRight: 10
   },
 
   datePicker: {
@@ -218,6 +277,32 @@ const styles = StyleSheet.create({
     height: 0,
   },
 
+  signupButton: {
+    width: windowWidth * 0.8,
+    height: windowHeight * 0.1,
+    backgroundColor: altColor1,
+    textAlign: 'center',
+    color: textColor,
+    fontSize: 20,
+    fontFamily: 'Roboto',
+    borderRadius: 10,
+    
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginTop: 10,
+
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  signupButtonText: {
+    fontSize: 20,
+    fontFamily: 'Roboto',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    color: textColor,
+  },
 });
 
 export default SignUp;

@@ -527,6 +527,11 @@ def get_country(current_user, country_id):
     country = CountryModel.query.get(country_id)
     return jsonify(country.serialize()), 200
 
+@app.route("/api/countries/code/<string:country_code>", methods=["GET"])
+def get_country_by_code(country_code):
+    country = CountryModel.query.filter_by(code=country_code).first()
+    return jsonify(country.serialize()), 200
+
 @app.route("/api/countries", methods=["POST"])
 @token_required
 def create_country(current_user):
