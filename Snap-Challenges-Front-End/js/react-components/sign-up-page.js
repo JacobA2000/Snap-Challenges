@@ -65,7 +65,7 @@ const SignUp = ()  => {
 
   // SIGN UP BUTTON CLICK
   function handleSignupButtonClick() {
-    console.log('Sign Up Successful!' + '\n' + 'First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
+    console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
     
     let country_id = null;
 
@@ -162,10 +162,11 @@ const SignUp = ()  => {
             zIndex={1000}
             zIndexInverse={4000}
           />
+
+          <TouchableHighlight style={styles.signupButton} onPress={() => handleSignupButtonClick()}>
+            <Text style={styles.signupButtonText}>SIGN UP</Text>
+          </TouchableHighlight>
         </View>
-        <TouchableHighlight style={styles.signupButton} onPress={() => handleSignupButtonClick()}>
-          <Text style={styles.signupButtonText}>SIGN UP</Text>
-        </TouchableHighlight>
     </SafeAreaView>
   );
 }
