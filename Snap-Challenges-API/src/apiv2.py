@@ -1,4 +1,5 @@
 # Using flask to build and run the webserver
+from email.policy import default
 from flask import Flask, request, jsonify, make_response
 
 # DB
@@ -24,7 +25,7 @@ import datetime
 import time
 import json
 
-from flask_cors import CORS
+APACHE_WEB_SERVER_URL = 'localhost'
 
 #region: Initialization
 # READING THE CONFIG FILE
@@ -48,13 +49,17 @@ DB_PASSWORD = config_parser.get("mysql-database", "DB_PASSWORD")
 app.config["SQLALCHEMY_DATABASE_URI"] = f"mysql://{DB_USER}:{DB_PASSWORD}@{DB_SERVER}/{DB_NAME}"
 app.app_context().push()
 
-cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
-
 # DB APP INITIALIZATION
 db.init_app(app)
 # DB CREATION - IF RAN MAY OVERWRITE EXISTING DB 
 # db.create_all()
+
+@app.after_request
+def after_request(response):
+    header = response.headers
+    header['Access-Control-Allow-Origin'] = '*'
+    header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    return response
 
 #IF COUNTRIES ARENT ALREADY ON THE DB
 countries_file_path = path.join(thisfolder, "countries.json")
@@ -327,46 +332,6 @@ def get_single_user(current_user, user_public_id):
     # Return the user
     return jsonify(user.serialize()), 200
 
-# @app.route("/api/users", methods=["POST"])
-# @token_required
-# def create_user(current_user):
-#     """
-#     This function creates a new user.
-#     """
-#     # Get the data from the request
-#     data = request.get_json()
-
-#     # Check if the data is valid
-#     if not data:
-#         return jsonify({"message": "No data provided."}), 400
-
-#     hashed_password = generate_password_hash(data["password"], method='sha256')
-
-#     # Create the user
-#     user = UserModel(
-#         public_id=str(uuid.uuid4()),
-#         username = data["username"],
-#         password = hashed_password,  
-#         email = data["email"],
-#         registered_at = datetime.datetime.utcnow(),
-
-#         country_id = data["country_id"],
-#         given_name = data["given_name"],
-#         family_name = data["family_name"],
-#         date_of_birth = data["date_of_birth"],
-
-#         avatar_url = data["avatar_url"],
-#         bio = data["bio"],
-#         is_admin = False
-#     )
-
-#     # Add the user to the database
-#     db.session.add(user)
-#     db.session.commit()
-
-#     # Return the user
-#     return jsonify(user.serialize()), 201
-
 @app.route("/api/users/<string:user_public_id>", methods=["PUT"])
 @token_required
 def update_user(current_user, user_public_id):
@@ -468,8 +433,7 @@ def register():
         family_name = data["family_name"],
         date_of_birth = data["date_of_birth"],
 
-        avatar_url = data["avatar_url"],
-        bio = data["bio"],
+        avatar_url = f"{APACHE_WEB_SERVER_URL}/assets/images/static/default-avatar.png",
         is_admin = False
     )
 

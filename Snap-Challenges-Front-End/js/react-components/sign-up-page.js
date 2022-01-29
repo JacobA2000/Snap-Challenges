@@ -48,6 +48,7 @@ const SignUp = ()  => {
   const [password, setPassword] = React.useState(null);
   const [passwordConf, setPasswordConf] = React.useState(null);
   const [selectedDOB, setSelectedDOB] = React.useState(null);
+  const [textDob, setTextDob] = React.useState(null);
   const [selectedCountry, setSelectedCountry] = React.useState(null);
 
   const showDatePicker = () => {
@@ -65,41 +66,63 @@ const SignUp = ()  => {
 
   // SIGN UP BUTTON CLICK
   function handleSignupButtonClick() {
-    console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
-    
+    let user_dob = "";
+    if (Platform.OS === 'android' || Platform.OS === 'ios') {
+      console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
+      user_dob = selectedDOB
+    } else {
+      console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + textDob + '\n' + 'Country: ' + selectedCountry);
+      
+      let date = textDob.split('/');
+      let month = date[1] - 1;
+
+      user_dob = new Date(date[2], month, date[0], 12,0,0).toISOString().split('T')[0]
+    }
+
     let country_id = null;
 
     fetch ('http://localhost:5000/api/countries/code/' + selectedCountry, {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
     })
     .then(response => {
-      country_id = response.json().id;
-    })
-    .catch(error => {
-      console.log(error);
-    });
+      response.json().then(data => ({
+        data: data,
+        status: response.status
+      }))
+      
+      .then(res => {
+        country_id = res.data.id;
 
-    fetch ('http://localhost:5000/register', {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: username,
-        password: password,
-        email: email,
-        country_id: country_id,
-        given_name: firstName,
-        family_name: lastName,
-        date_of_birth: selectedDOB,
-      })
-    })
-    .then(response => {
-      console.log(response);
+        fetch ('http://localhost:5000/api/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            "username": username,
+            "password": password,
+            "email": email,
+            "country_id": country_id,
+            "given_name": firstName,
+            "family_name": lastName,
+            "date_of_birth": user_dob,
+          })
+        })
+
+        .then(response => {
+          response.json().then(data => ({
+            data: data,
+            status: response.status
+          })).then(res => {
+            console.log(res.data);
+          });
+        })
+
+        .catch(error => {
+          console.log(error);
+        });
+
+      });
     })
     .catch(error => {
       console.log(error);
@@ -138,7 +161,7 @@ const SignUp = ()  => {
           </HideableView>
           
           <HideableView visible={Platform.OS === 'android' || Platform.OS === 'ios' ? false : true}>
-            <TextInput style={styles.signupTextBox} placeholder="DOB" placeholderTextColor={textColor} />
+            <TextInput style={styles.signupTextBox} placeholder="DOB" placeholderTextColor={textColor} onChangeText={dob => setTextDob(dob)} />
           </HideableView>
 
           <DropDownPicker
