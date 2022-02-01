@@ -566,6 +566,94 @@ def delete_country(current_user, country_id):
 
 #endregion
 
+#region: CHALLENGE API ENDPOINT
+@app.route("/api/challenges", methods=["GET"])
+@token_required
+def get_active_challenges(current_user):
+    """
+    Returns a list of all challenges.
+    """
+    challenges = ChallengeModel.query.all().filter_by(ChallengeModel.end_date >= datetime.datetime.now())
+    return jsonify(challenges=[challenge.serialize() for challenge in challenges]), 200
+
+@app.route("/api/challenges/<int:challenge_id>", methods=["GET"])
+@token_required
+def get_challenge(current_user, challenge_id):
+    """
+    Returns a challenge with a specific id.
+    """
+    challenge = ChallengeModel.query.get(challenge_id)
+    return jsonify(challenge.serialize()), 200
+
+@app.route("/api/challenges", methods=["POST"])
+@token_required
+def create_challenge(current_user):
+    """
+    This function creates a new challenge.
+    """
+    # Get the data from the request
+    data = request.get_json()
+
+    # Check if the data is valid
+    if not data:
+        return jsonify({"message": "No data provided."}), 400
+
+    # Create the challenge
+    challenge = ChallengeModel(
+        title=data["title"],
+        description=data["description"],
+        start_date=data["start_date"],
+        end_date=data["end_date"],
+        times_completed=0
+    )
+
+    # Add the challenge to the database
+    db.session.add(challenge)
+    db.session.commit()
+
+    # Return the challenge
+    return jsonify(challenge.serialize()), 201
+
+@app.route("/api/challenges/<int:challenge_id>", methods=["PUT"])
+@token_required
+def increment_times_completed(current_user, challenge_id):
+    """
+    This function increments the times completed of a challenge.
+    """
+    # Get the challenge
+    challenge = ChallengeModel.query.get(challenge_id)
+
+    # Increment the times completed
+    challenge.times_completed += 1
+
+    # Add the challenge to the database
+    db.session.commit()
+
+    # Return the challenge
+    return jsonify(challenge.serialize()), 204
+
+@app.route("/api/challenges/<int:challenge_id>", methods=["DELETE"])
+@token_required
+def delete_challenge(current_user, challenge_id):
+    """
+    This function deletes a challenge.
+    """
+
+    if current_user.is_admin:
+        # Get the challenge
+        challenge = ChallengeModel.query.get(challenge_id)
+
+        # Delete the challenge
+        db.session.delete(challenge)
+        db.session.commit()
+
+        # Return a success message
+        return "", 204
+
+    else :
+        return jsonify({"message": "You are not authorized to delete this challenge."}), 401
+#endregion
+
 #endregion
 
 if __name__ == "__main__":

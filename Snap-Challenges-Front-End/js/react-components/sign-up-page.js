@@ -6,9 +6,7 @@ import {
   Text, 
   View, 
   TextInput,
-  Image,
   Platform,
-  Button,
   TouchableHighlight,
 } from 'react-native';
 
@@ -23,6 +21,8 @@ import { textColor, altColor1, statusBarTheme, backgroundColor, colorScheme} fro
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
+
+import { API_URL } from '../serverconf';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -81,52 +81,56 @@ const SignUp = ()  => {
 
     let country_id = null;
 
-    fetch ('http://localhost:5000/api/countries/code/' + selectedCountry, {
-      method: 'GET',
-    })
-    .then(response => {
-      response.json().then(data => ({
-        data: data,
-        status: response.status
-      }))
-      
-      .then(res => {
-        country_id = res.data.id;
+    if (password === passwordConf) {
+      fetch (API_URL + 'countries/code/' + selectedCountry, {
+        method: 'GET',
+      })
+      .then(response => {
+        response.json().then(data => ({
+          data: data,
+          status: response.status
+        }))
+        
+        .then(res => {
+          country_id = res.data.id;
 
-        fetch ('http://localhost:5000/api/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            "username": username,
-            "password": password,
-            "email": email,
-            "country_id": country_id,
-            "given_name": firstName,
-            "family_name": lastName,
-            "date_of_birth": user_dob,
+          fetch (API_URL + 'register', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              "username": username,
+              "password": password,
+              "email": email,
+              "country_id": country_id,
+              "given_name": firstName,
+              "family_name": lastName,
+              "date_of_birth": user_dob,
+            })
           })
-        })
 
-        .then(response => {
-          response.json().then(data => ({
-            data: data,
-            status: response.status
-          })).then(res => {
-            console.log(res.data);
+          .then(response => {
+            response.json().then(data => ({
+              data: data,
+              status: response.status
+            })).then(res => {
+              console.log(res.data);
+            });
+          })
+
+          .catch(error => {
+            console.log(error);
           });
-        })
 
-        .catch(error => {
-          console.log(error);
         });
-
+      })
+      .catch(error => {
+        console.log(error);
       });
-    })
-    .catch(error => {
-      console.log(error);
-    });
+    } else {
+      alert('Passwords do not match');
+    }
   }
 
   return (
