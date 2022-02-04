@@ -17,7 +17,7 @@ import { altColor1, altColor2, textColor } from '../../theme-handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const ChallengeCard = ({id, title, desc, time_left, author})  => {
+const ChallengeCard = ({id, title, desc, time_left, author_id})  => {
 
     return (
         <TouchableOpacity style={styles.imageGridItem} onPress={() => alert(id)}>
@@ -37,7 +37,7 @@ const ChallengeCard = ({id, title, desc, time_left, author})  => {
                 <View style={styles.cardFooter}>
                     <View style={styles.cardFooterLeft}>
                         <Image style={styles.cardAuthorImage} source={{uri: "https://www.w3schools.com/howto/img_avatar2.png"}} />
-                        <Text style={styles.cardAuthor}> {author} </Text>
+                        <Text style={styles.cardAuthor}> {author_id} </Text>
                     </View>
                     <View style={styles.cardFooterRight}>
                         <TouchableHighlight style={styles.cardFooterRightButton}>

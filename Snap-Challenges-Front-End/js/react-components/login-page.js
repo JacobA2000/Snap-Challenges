@@ -16,28 +16,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import base64 from 'base-64';
 
 // MY IMPORTS
-// import { GoogleApi } from '../google-api-handler.js';
 import globalStyles from '../global-styles.js';
+import { storeToken, getToken } from '../flask-api-token.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-// WebBrowser.maybeCompleteAuthSession();
-
 const Login = ({ navigation })  => {
-  // const [request, response, promptAsync] = Google.useAuthRequest({
-  //   expoClientId: '918375695632-au8sr5oebk32remoefi1d4m3c8suludp.apps.googleusercontent.com',
-  //   iosClientId: '918375695632-lj5c0c0187gb06om7p2rqoovnrm055hp.apps.googleusercontent.com',
-  //   androidClientId: '918375695632-kfdjlaes6gfbtnillksad5bjk00s2rf6.apps.googleusercontent.com',
-  //   webClientId: '918375695632-euu2cqvfnut4tm06c54ee5o57j6b0k9t.apps.googleusercontent.com',
-  // });
 
   const [username, setUsername] = useState(''); 
   const [password, setPassword] = useState('');
 
   function handleLoginButtonClick() {
-    alert("Username = " + username + " Password = " + password);
-
     fetch('http://localhost:5000/api/login', {
       method: 'GET',
       headers: {
@@ -45,37 +35,33 @@ const Login = ({ navigation })  => {
         'Authorization': 'Basic ' + base64.encode(username + ':' + password)
       }
     }).then(response => {
-      console.log(response.json());
+
+      response.json().then(data => ({
+        data: data,
+        status: response.status
+      }))
+      .then(res => {
+        if (res.status === 200) {
+          storeToken(res.data.token);
+          navigation.navigate('Challenges');
+        } else {
+          alert('Invalid username or password');
+        }
+      });
+    }).catch(error => {
+      console.log(error);
     });
   }
 
   function handleSignUpButtonClick() {
     navigation.navigate('SignUp');
   }
-  
-  // React.useEffect(() => {
-  //   if (response?.type === 'success') {
-  //     const { authentication } = response;
-  //     const { accessToken } = authentication;
-
-  //     let googleApi = new GoogleApi(accessToken);
-  //     googleApi.getUserData(accessToken)
-  //       .then(userData => {
-  //         console.log(userData);
-  //       }
-  //     );
-  //     navigation.navigate('SignUpDetailsForm');
-  //   }
-  // }, [response]);
 
   return (
     <SafeAreaView style={GlobalStyles.centeredContainer}>
         <StatusBar style={statusBarTheme} />
         <Image style={styles.logo} source={require('../../assets/snap-challenges-logos/small-logo.png')} />
         <Text style={styles.tagLine}>A COLLABORATIVE PHOTOGRPAHY EXPERIENCE</Text>
-        {/* <TouchableOpacity style={styles.loginButton} disabled={!request} title="Login" onPress={() => {promptAsync();}}>
-            <Image style={styles.googleLoginImage}source={require('../../assets/google-sign-in-buttons/btn_google_signin_dark_normal_web.png')}/>
-        </TouchableOpacity>      */}
         <TextInput 
           style={styles.loginTextBox} 
           placeholder="Username" 

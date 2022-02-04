@@ -23,11 +23,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 
 import { API_URL } from '../serverconf';
+import { NavigationContainer } from '@react-navigation/native';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const SignUp = ()  => {
+const SignUp = ({ navigation })  => {
 
   // DROP DOWN PICKER
   let data = '';
@@ -115,7 +116,16 @@ const SignUp = ()  => {
               data: data,
               status: response.status
             })).then(res => {
-              console.log(res.data);
+
+              if (res.status === 200) {
+                console.log('Successfully registered user');
+                
+                navigation.navigate('Login');
+
+              } else {
+                console.log('Failed to register user');
+              }
+
             });
           })
 

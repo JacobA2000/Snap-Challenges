@@ -1,5 +1,5 @@
 // REACT IMPORTS
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Dimensions, 
   StyleSheet, 
@@ -22,6 +22,8 @@ import BottomBar from './global-components/bottombar.js';
 import ChallengeList from './global-components/challengeslist.js';
 
 import { API_URL } from '../serverconf.js';
+
+import { getToken } from '../flask-api-token.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
