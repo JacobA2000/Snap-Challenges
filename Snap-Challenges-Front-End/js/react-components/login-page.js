@@ -17,7 +17,8 @@ import base64 from 'base-64';
 
 // MY IMPORTS
 import globalStyles from '../global-styles.js';
-import { storeToken, getToken } from '../flask-api-token.js';
+import { storeValueInAsyncStorage } from '../AsyncStorage-Handler.js';
+import { API_URL } from '../serverconf.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -28,21 +29,25 @@ const Login = ({ navigation })  => {
   const [password, setPassword] = useState('');
 
   function handleLoginButtonClick() {
-    fetch('http://localhost:5000/api/login', {
+    fetch( API_URL + 'login', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Basic ' + base64.encode(username + ':' + password)
       }
     }).then(response => {
-
       response.json().then(data => ({
         data: data,
         status: response.status
       }))
       .then(res => {
         if (res.status === 200) {
-          storeToken(res.data.token);
+          storeValueInAsyncStorage('@token', res.data.token);
+          storeValueInAsyncStorage('@refreshToken', res.data.refresh_token);
+
+          let decodedToken = jwt_decode(token);
+          storeValueInAsyncStorage('@public_id', decodedToken.public_id);
+
           navigation.navigate('Challenges');
         } else {
           alert('Invalid username or password');
@@ -103,11 +108,6 @@ const styles = StyleSheet.create({
     width: windowWidth * 0.75,
     paddingVertical: 25
   },
-
-  // googleLoginImage: {
-  //   width: 191,
-  //   height: 46,
-  // },
 
   loginTextBox: {
     height: windowHeight * 0.075,

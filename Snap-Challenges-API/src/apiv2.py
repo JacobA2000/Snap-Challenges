@@ -58,7 +58,7 @@ db.init_app(app)
 def after_request(response):
     header = response.headers
     header['Access-Control-Allow-Origin'] = '*'
-    header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    header['Access-Control-Allow-Headers'] = 'Content-Type,Authorization,X-Access-Token'
     return response
 
 #IF COUNTRIES ARENT ALREADY ON THE DB
@@ -90,7 +90,15 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, app.config['SECRET_KEY'])
-            current_user = UserModel.query.filter_by(public_id=data['public_id']).first()
+            #Get the scope from the token data
+            scope = data['scope']
+
+            #Check if the scope is valid
+            if scope == 'user':
+                current_user = UserModel.query.filter_by(public_id=data['public_id']).first()
+            else:
+                return jsonify({'message': 'Invalid scope'}), 401
+
         except:
             return jsonify({'message': 'Token is invalid'}), 401
 
@@ -332,6 +340,15 @@ def get_single_user(current_user, user_public_id):
     # Return the user
     return jsonify(user.serialize()), 200
 
+# GET CURRENT USER
+@app.route("/api/users/me", methods=["GET"])
+@token_required
+def get_current_user(current_user):
+    """
+    This function returns the current user.
+    """
+    return jsonify(current_user.serialize()), 200
+
 @app.route("/api/users/<string:user_public_id>", methods=["PUT"])
 @token_required
 def update_user(current_user, user_public_id):
@@ -459,17 +476,54 @@ def login():
         return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 
     if check_password_hash(user.password, auth.password):
-        token = jwt.encode({'public_id' : user.public_id, 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+        token = jwt.encode(
+            {
+                'public_id' : user.public_id,
+                'scope' : 'user',
+                'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+            }, 
+            app.config['SECRET_KEY']
+        )
         
+        refresh_token = jwt.encode(
+            {
+                'public_id' : user.public_id, 
+                'scope' :  'refresh',
+                'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=60)
+            }, 
+            app.config['SECRET_KEY']
+        )
+
         ts = time.time()
         timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
         user.last_login = timestamp
 
         db.session.commit()
 
-        return jsonify({'token' : token.decode('utf-8')}), 200
+        return jsonify({'token' : token.decode('utf-8'), 'refreshToken': refresh_token}), 200
 
     return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
+#endregion
+
+#region: REFRESH TOKEN ENDPOINT
+
+# REFERSH AN OLD JWT TOKEN
+@app.route("/api/refreshtoken")
+def refresh():
+    # GET OLD TOKEN FROM HEADERS
+    token = request.headers["X-Access-Token"]
+
+    # VALIDATE THE TOKEN
+    try:
+        data = jwt.decode(token, app.config['SECRET_KEY'])
+    except:
+        return jsonify({"message": "Token is invalid."}), 401
+
+    # GENERATE A NEW TOKEN
+    new_token = jwt.encode({'public_id' : data['public_id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+
+    # RETURN THE NEW TOKEN
+    return jsonify({'token' : new_token.decode('utf-8')}), 200
 #endregion
 
 #region: COUNTRY API ENDPOINT

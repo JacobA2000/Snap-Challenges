@@ -16,21 +16,21 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const BottomBar = ()  => {
-  return (
-    <View style={styles.bottomBarContainer}>
-        <View style={styles.bottomBarNavList}>
-            <TouchableOpacity style={styles.bottomBarNavButton} title="Challenges" onPress={() => {alert("CHALLENGE")}}>
-                <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/challenge-icon.png')}/>
-            </TouchableOpacity> 
-            <TouchableOpacity style={styles.bottomBarNavButton} title="Badges" onPress={() => {alert("BADGE")}}>
-                <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/badge-icon.png')}/>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.bottomBarNavButton} title="Profile" onPress={() => {alert("PROFILE")}}>
-                <Image style={styles.bottomBarNavButtonProfileImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}}/>
-            </TouchableOpacity>
+    return (
+        <View style={styles.bottomBarContainer}>
+            <View style={styles.bottomBarNavList}>
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Challenges" onPress={() => {alert("CHALLENGE")}}>
+                    <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/challenge-icon.png')}/>
+                </TouchableOpacity> 
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Badges" onPress={() => {alert("BADGE")}}>
+                    <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/badge-icon.png')}/>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Profile" onPress={() => {alert("PROFILE")}}>
+                    <Image style={styles.bottomBarNavButtonProfileImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}}/>
+                </TouchableOpacity>
+            </View>
         </View>
-    </View>
-  );
+    );
 }
 
 const styles = StyleSheet.create({

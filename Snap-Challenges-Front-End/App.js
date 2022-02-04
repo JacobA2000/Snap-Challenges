@@ -1,10 +1,13 @@
 // REACT IMPORTS
 import React, { Component, useEffect } from 'react';
 
-// RERACT NAVIGATION IMPORTS
+// REACT NAVIGATION IMPORTS
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+
+//OTHER IMPORTS
+import jwt_decode from 'jwt-decode';
 
 // PAGE COMPONENT IMPORTS
 import Login from './js/react-components/login-page.js';
@@ -15,7 +18,8 @@ import Challenges from './js/react-components/challenges-page.js';
 import TestPage from './js/react-components/test-page.js';
 
 // MY SCRIPT IMPORTS
-import { getToken } from './js/flask-api-token.js';
+import { getValueFromAsyncStorage, storeValueInAsyncStorage } from './js/AsyncStorage-Handler.js';
+import { API_URL } from './js/serverconf.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,21 +34,85 @@ export default class App extends Component {
   }
 
   componentDidMount() {
-    getToken().then(token => {
+
+
+    // TODO - GET THE TOKEN AND REFRESH TOKEN FROM ASYNC STORAGE
+    
+    getValueFromAsyncStorage('@token').then(token => {
+
+      if (token) {
+        // GET USER PUBLIC ID
+        // fetch(API_URL + 'users/me', {
+        //   method: 'GET',
+        //   headers: {
+        //     'Content-Type': 'application/json',
+        //     'x-access-token': token
+        //   }
+        // }).then(response => {
+        //   response.json().then(data => ({
+        //     data: data,
+        //     status: response.status
+        //   }))
+        //   .then(res => {
+        //     if (res.status === 200) {
+        //       console.log(res.data.public_id);
+        //     } else {
+        //       console.log('Invalid token');
+        //     }
+        //   });
+        // }).catch(error => {
+        //   console.log(error);
+        // });
+
+        let decodedToken = jwt_decode(token);
+
+        // CHECK IF TOKEN EXPIRED 
+        if (decodedToken.exp < Date.now() / 1000) {
+          console.log('Token expired');
+
+          // GET NEW TOKEN FROM API REFRESH ENDPOINT
+          fetch(API_URL + 'refreshtoken', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-access-token': refreshToken
+            }
+          }).then(response => {
+            response.json().then(data => ({
+              data: data,
+              status: response.status
+            }))
+            .then(res => {
+              if (res.status === 200) {
+                console.log(res.data.token);
+                storeValueInAsyncStorage('@token', res.data.token);
+                this.setState({ token: res.data.token });
+              } else {
+                console.log('Invalid token');
+              }
+            });
+          }).catch(error => {
+            console.log(error);
+          });
+
+          // UPDATE TOKEN IN ASYNC STORAGE
+          
+        } else {
+          console.log('Token valid');
+
+          // STORE USER PUBLIC ID
+          storeValueInAsyncStorage('@public_id', decodedToken.public_id);
+        }
+
+        this.setState({
+          initRoute: 'Challenges',
+        });
+      }
+
       this.setState({
         token: token,
         isLoading: false,
       });
-
-      if (token) {
-        this.setState({
-          initRoute: 'Challenges',
-        });
-
-        
-        // TODO - REFRESH TOKEN
-
-      }
     });
   }
 

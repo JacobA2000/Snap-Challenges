@@ -117,11 +117,10 @@ const SignUp = ({ navigation })  => {
               status: response.status
             })).then(res => {
 
-              if (res.status === 200) {
+              if (res.status === 201) {
                 console.log('Successfully registered user');
                 
                 navigation.navigate('Login');
-
               } else {
                 console.log('Failed to register user');
               }

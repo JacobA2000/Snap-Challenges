@@ -23,7 +23,7 @@ import ChallengeList from './global-components/challengeslist.js';
 
 import { API_URL } from '../serverconf.js';
 
-import { getToken } from '../flask-api-token.js';
+import { getValue } from '../AsyncStorage-Handler.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
