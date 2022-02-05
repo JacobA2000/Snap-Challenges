@@ -20,6 +20,7 @@ import TestPage from './js/react-components/test-page.js';
 // MY SCRIPT IMPORTS
 import { getMultipleValuesFromAsyncStorage, getValueFromAsyncStorage, storeValueInAsyncStorage } from './js/AsyncStorage-Handler.js';
 import { API_URL } from './js/serverconf.js';
+import globalStates from './js/global-states.js';
 
 const Stack = createNativeStackNavigator();
 
@@ -49,7 +50,13 @@ export default class App extends Component {
       .then(res => {
         if (res.status === 200) {
 
-          storeValueInAsyncStorage('@token', res.data.token);
+          let newToken = res.data.token;
+          // store token on device
+          storeValueInAsyncStorage('@token', newToken);
+          // store the token in memory global state
+          globalStates.token = newToken;
+
+          this.forceUpdate();
 
         } else {
           console.log('Invalid token');
@@ -60,26 +67,54 @@ export default class App extends Component {
     });
   }
 
+  async checkIfRefreshNeeded (token) {
+    // CHECK IF REFRESH NEEDED
+    let decodedToken = jwt_decode(token);
+    console.log('Token expiry: ' + decodedToken.exp);
+    console.log('Current time: ' + Date.now() / 1000);
+    let currentTime = Math.floor(Date.now() / 1000);
+    //Calculate time difference
+    let timeDifference = decodedToken.exp - currentTime;
+
+    console.log('Time difference: ' + timeDifference);
+
+    if (timeDifference <= 300) {
+      return true;
+    } 
+
+    return false;
+  }
+
   componentDidMount() { 
 
     getMultipleValuesFromAsyncStorage(['@token', '@refreshToken']).then(tokens => {
-
       let token = tokens[0][1];
       let refreshToken = tokens[1][1];
+      
+      // TIMER FOR REFRESHING TOKEN 
+      // TODO - NOT WORKING PROPERLY - NEED TO FIX
+      //        TOKEN IS NEVER UPDATED, THE FOR timeDifference <= 300 never matches for some reason.
+      this.refreshTimer = setInterval(() => {
+        console.log('Timer checking if refresh needed');
 
-      // SET TOKEN TIMER
-      this.timer = setInterval(() => {
-        this.refreshApiToken(refreshToken);
-        console.log('Timer refreshing token');
-      }, 20 * 60 * 1000);
+        console.log('Global token: ' + globalStates.token);
+
+        if (this.checkIfRefreshNeeded(globalStates.token) === true) {
+          console.log('Refresh needed');
+          this.refreshApiToken(refreshToken);
+        }
+        else {console.log('No refresh needed');}
+      }, 1 * 60 * 1000);
 
       if (token) {
+        globalStates.token = token;
+
         let decodedToken = jwt_decode(token);
         let decodedRefreshToken = jwt_decode(refreshToken);
 
         // CHECK IF TOKEN EXPIRED 
         if (decodedToken.exp < Date.now() / 1000) {
-          console.log('Token expired - Attempting to refresh');
+          console.log('Token expired - Attempting to refresh: ' + token);
 
           // CHECK IF REFRESH TOKEN IS VALID
           if (decodedRefreshToken.exp < Date.now() / 1000) {

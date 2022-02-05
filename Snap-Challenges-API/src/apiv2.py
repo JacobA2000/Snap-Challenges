@@ -520,7 +520,14 @@ def refresh():
         return jsonify({"message": "Token is invalid."}), 401
 
     # GENERATE A NEW TOKEN
-    new_token = jwt.encode({'public_id' : data['public_id'], 'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)}, app.config['SECRET_KEY'])
+    new_token = jwt.encode(
+        {
+            'public_id' : data['public_id'], 
+            'scope' : 'user', 
+            'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+        }, 
+        app.config['SECRET_KEY']
+    )
 
     # RETURN THE NEW TOKEN
     return jsonify({'token' : new_token.decode('utf-8')}), 200
