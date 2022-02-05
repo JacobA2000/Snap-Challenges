@@ -28,7 +28,7 @@ import { getValue } from '../AsyncStorage-Handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const ChallengesPage = ()  => {
+const ChallengesPage = ({ navigation })  => {
 
     // SEND A REQUEST TO THE SERVER TO GET THE CHALLENGES
     // CHALLENGES WILL BE STORED IN THE VARIABLE CHALLENGES

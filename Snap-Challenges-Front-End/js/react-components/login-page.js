@@ -20,6 +20,8 @@ import globalStyles from '../global-styles.js';
 import { storeValueInAsyncStorage } from '../AsyncStorage-Handler.js';
 import { API_URL } from '../serverconf.js';
 
+import jwt_decode from 'jwt-decode';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -43,9 +45,9 @@ const Login = ({ navigation })  => {
       .then(res => {
         if (res.status === 200) {
           storeValueInAsyncStorage('@token', res.data.token);
-          storeValueInAsyncStorage('@refreshToken', res.data.refresh_token);
+          storeValueInAsyncStorage('@refreshToken', res.data.refreshToken);
 
-          let decodedToken = jwt_decode(token);
+          let decodedToken = jwt_decode(res.data.token);
           storeValueInAsyncStorage('@public_id', decodedToken.public_id);
 
           navigation.navigate('Challenges');

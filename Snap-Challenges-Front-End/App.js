@@ -18,7 +18,7 @@ import Challenges from './js/react-components/challenges-page.js';
 import TestPage from './js/react-components/test-page.js';
 
 // MY SCRIPT IMPORTS
-import { getValueFromAsyncStorage, storeValueInAsyncStorage } from './js/AsyncStorage-Handler.js';
+import { getMultipleValuesFromAsyncStorage, getValueFromAsyncStorage, storeValueInAsyncStorage } from './js/AsyncStorage-Handler.js';
 import { API_URL } from './js/serverconf.js';
 
 const Stack = createNativeStackNavigator();
@@ -33,70 +33,66 @@ export default class App extends Component {
     };
   }
 
-  componentDidMount() {
+  async refreshApiToken (refreshToken) {
+    // GET NEW TOKEN FROM API REFRESH ENDPOINT
+    fetch(API_URL + 'refreshtoken', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-access-token': refreshToken
+      }
+    }).then(response => {
+      response.json().then(data => ({
+        data: data,
+        status: response.status
+      }))
+      .then(res => {
+        if (res.status === 200) {
 
+          storeValueInAsyncStorage('@token', res.data.token);
 
-    // TODO - GET THE TOKEN AND REFRESH TOKEN FROM ASYNC STORAGE
-    
-    getValueFromAsyncStorage('@token').then(token => {
+        } else {
+          console.log('Invalid token');
+        }
+      });
+    }).catch(error => {
+      console.log(error);
+    });
+  }
+
+  componentDidMount() { 
+
+    getMultipleValuesFromAsyncStorage(['@token', '@refreshToken']).then(tokens => {
+
+      let token = tokens[0][1];
+      let refreshToken = tokens[1][1];
+
+      // SET TOKEN TIMER
+      this.timer = setInterval(() => {
+        this.refreshApiToken(refreshToken);
+        console.log('Timer refreshing token');
+      }, 20 * 60 * 1000);
 
       if (token) {
-        // GET USER PUBLIC ID
-        // fetch(API_URL + 'users/me', {
-        //   method: 'GET',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //     'x-access-token': token
-        //   }
-        // }).then(response => {
-        //   response.json().then(data => ({
-        //     data: data,
-        //     status: response.status
-        //   }))
-        //   .then(res => {
-        //     if (res.status === 200) {
-        //       console.log(res.data.public_id);
-        //     } else {
-        //       console.log('Invalid token');
-        //     }
-        //   });
-        // }).catch(error => {
-        //   console.log(error);
-        // });
-
         let decodedToken = jwt_decode(token);
+        let decodedRefreshToken = jwt_decode(refreshToken);
 
         // CHECK IF TOKEN EXPIRED 
         if (decodedToken.exp < Date.now() / 1000) {
-          console.log('Token expired');
+          console.log('Token expired - Attempting to refresh');
 
-          // GET NEW TOKEN FROM API REFRESH ENDPOINT
-          fetch(API_URL + 'refreshtoken', {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-access-token': refreshToken
-            }
-          }).then(response => {
-            response.json().then(data => ({
-              data: data,
-              status: response.status
-            }))
-            .then(res => {
-              if (res.status === 200) {
-                console.log(res.data.token);
-                storeValueInAsyncStorage('@token', res.data.token);
-                this.setState({ token: res.data.token });
-              } else {
-                console.log('Invalid token');
-              }
+          // CHECK IF REFRESH TOKEN IS VALID
+          if (decodedRefreshToken.exp < Date.now() / 1000) {
+            console.log('Refresh token expired - Logging out');
+            this.setState({
+              initRoute: 'Login',
+              isLoading: false
             });
-          }).catch(error => {
-            console.log(error);
-          });
-
-          // UPDATE TOKEN IN ASYNC STORAGE
-          
+          } else {
+            // REFRESH TOKEN IS VALID - REFRESH TOKEN
+            console.log('Refresh token is valid - Attempting to refresh token');
+            this.refreshApiToken(refreshToken);
+          }
         } else {
           console.log('Token valid');
 
@@ -110,7 +106,6 @@ export default class App extends Component {
       }
 
       this.setState({
-        token: token,
         isLoading: false,
       });
     });

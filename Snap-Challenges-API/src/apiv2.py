@@ -25,7 +25,7 @@ import datetime
 import time
 import json
 
-APACHE_WEB_SERVER_URL = 'localhost'
+APACHE_WEB_SERVER_URL = 'http://localhost'
 
 #region: Initialization
 # READING THE CONFIG FILE
@@ -500,7 +500,7 @@ def login():
 
         db.session.commit()
 
-        return jsonify({'token' : token.decode('utf-8'), 'refreshToken': refresh_token}), 200
+        return jsonify({'token' : token.decode('utf-8'), 'refreshToken': refresh_token.decode('utf-8')}), 200
 
     return make_response('Could not verify', 401, {'WWW-Authenticate' : 'Basic realm="Login required!"'})
 #endregion

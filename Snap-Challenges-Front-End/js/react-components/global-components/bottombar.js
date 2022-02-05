@@ -1,6 +1,6 @@
 // REACT IMPORTS
-import { AuthError } from 'expo-auth-session';
-import React from 'react';
+import React, {useState} from 'react';
+
 import { 
   Dimensions, 
   StyleSheet, 
@@ -12,21 +12,73 @@ import {
 // STYLE IMPORTS
 import { altColor1, altColor2 } from '../../theme-handler.js';
 
+import { getMultipleValuesFromAsyncStorage } from '../../AsyncStorage-Handler.js';
+
+import { API_URL } from '../../serverconf.js';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const BottomBar = ()  => {
+const BottomBar = ({ navigation })  => {
+    const [isLoading, setIsLoading] = useState(true);
+    const [avatar_url, setAvatarUrl] = useState('');
+
+    React.useEffect(() => {
+        getMultipleValuesFromAsyncStorage(['@public_id', '@token']).then(storedData => {
+            let public_id = storedData[0][1];
+            let token = storedData[1][1];
+
+            if (public_id) {
+                fetch (API_URL + 'users/' + public_id, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Token': token
+                    }
+                }).then(response => {
+                    response.json().then(data => ({
+                        data: data,
+                        status: response.status
+                    }))
+                    .then(res => {
+                        if (res.status === 200) {
+                            setAvatarUrl(res.data.avatar_url);
+                            setIsLoading(false);
+                        }
+                    });
+                });
+            }
+        });
+    }, []);
+
+    function handleChallengesButtonClick() {
+        navigation.navigate('Challenges');
+    }
+
+    function handleBadgesButtonClick() {
+        //navigation.navigate('Badges');
+        alert('Not implemented yet');
+    }
+
+    function handleProfileButtonClick() {
+        navigation.navigate('Profile');
+    }
+
+    if (isLoading) {
+        return null;
+    }
+
     return (
         <View style={styles.bottomBarContainer}>
             <View style={styles.bottomBarNavList}>
-                <TouchableOpacity style={styles.bottomBarNavButton} title="Challenges" onPress={() => {alert("CHALLENGE")}}>
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Challenges" onPress={() => {handleChallengesButtonClick()}}>
                     <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/challenge-icon.png')}/>
                 </TouchableOpacity> 
-                <TouchableOpacity style={styles.bottomBarNavButton} title="Badges" onPress={() => {alert("BADGE")}}>
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Badges" onPress={() => {handleBadgesButtonClick()}}>
                     <Image style={styles.bottomBarNavButtonImage} source={require('../../../assets/menu-icons/badge-icon.png')}/>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.bottomBarNavButton} title="Profile" onPress={() => {alert("PROFILE")}}>
-                    <Image style={styles.bottomBarNavButtonProfileImage} source={{uri: 'https://pickaface.net/gallery/avatar/unr_test_180821_0925_9k0pgs.png'}}/>
+                <TouchableOpacity style={styles.bottomBarNavButton} title="Profile" onPress={() => {handleProfileButtonClick()}}>
+                    <Image style={styles.bottomBarNavButtonProfileImage} source={{uri: avatar_url}}/>
                 </TouchableOpacity>
             </View>
         </View>
