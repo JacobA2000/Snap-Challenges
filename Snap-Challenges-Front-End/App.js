@@ -70,8 +70,6 @@ export default class App extends Component {
   async checkIfRefreshNeeded (token) {
     // CHECK IF REFRESH NEEDED
     let decodedToken = jwt_decode(token);
-    console.log('Token expiry: ' + decodedToken.exp);
-    console.log('Current time: ' + Date.now() / 1000);
     let currentTime = Math.floor(Date.now() / 1000);
     //Calculate time difference
     let timeDifference = decodedToken.exp - currentTime;
@@ -95,15 +93,12 @@ export default class App extends Component {
       // TODO - NOT WORKING PROPERLY - NEED TO FIX
       //        TOKEN IS NEVER UPDATED, THE FOR timeDifference <= 300 never matches for some reason.
       this.refreshTimer = setInterval(() => {
-        console.log('Timer checking if refresh needed');
-
-        console.log('Global token: ' + globalStates.token);
-
-        if (this.checkIfRefreshNeeded(globalStates.token) === true) {
-          console.log('Refresh needed');
-          this.refreshApiToken(refreshToken);
-        }
-        else {console.log('No refresh needed');}
+        this.checkIfRefreshNeeded(globalStates.token).then(res => {
+          if (res === true) {
+            console.log('Refreshing token');
+            this.refreshApiToken(refreshToken);
+          }
+        });
       }, 1 * 60 * 1000);
 
       if (token) {
@@ -114,7 +109,7 @@ export default class App extends Component {
 
         // CHECK IF TOKEN EXPIRED 
         if (decodedToken.exp < Date.now() / 1000) {
-          console.log('Token expired - Attempting to refresh: ' + token);
+          console.log('Token expired - Attempting to refresh');
 
           // CHECK IF REFRESH TOKEN IS VALID
           if (decodedRefreshToken.exp < Date.now() / 1000) {
