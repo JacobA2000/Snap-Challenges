@@ -99,7 +99,7 @@ class UserHasPostsModel(db.Model):
     __tablename__ = "user_has_posts"
 
     id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.String(50), db.ForeignKey("users.public_id"), nullable=False)
     post_id = db.Column(db.Integer, db.ForeignKey("posts.id"), nullable=False)
 
     def __repr__(self) -> str:

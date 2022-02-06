@@ -15,6 +15,8 @@ import SignUp from './js/react-components/sign-up-page.js';
 import Profile from './js/react-components/profile-page.js';
 import Challenges from './js/react-components/challenges-page.js';
 
+import BottomBar from './js/react-components/global-components/bottombar.js';
+
 import TestPage from './js/react-components/test-page.js';
 
 // MY SCRIPT IMPORTS
@@ -52,9 +54,11 @@ export default class App extends Component {
 
           let newToken = res.data.token;
           // store token on device
-          storeValueInAsyncStorage('@token', newToken);
+          //storeValueInAsyncStorage('@token', newToken);
           // store the token in memory global state
           globalStates.token = newToken;
+          // store the public id in memory global state
+          globalStates.public_id = jwt_decode(newToken).public_id;
 
           this.forceUpdate();
 
@@ -88,21 +92,23 @@ export default class App extends Component {
     getMultipleValuesFromAsyncStorage(['@token', '@refreshToken']).then(tokens => {
       let token = tokens[0][1];
       let refreshToken = tokens[1][1];
-      
+
       // TIMER FOR REFRESHING TOKEN 
-      // TODO - NOT WORKING PROPERLY - NEED TO FIX
-      //        TOKEN IS NEVER UPDATED, THE FOR timeDifference <= 300 never matches for some reason.
-      this.refreshTimer = setInterval(() => {
-        this.checkIfRefreshNeeded(globalStates.token).then(res => {
-          if (res === true) {
-            console.log('Refreshing token');
-            this.refreshApiToken(refreshToken);
-          }
-        });
-      }, 1 * 60 * 1000);
+      if(globalStates.token !== null) {
+        this.refreshTimer = setInterval(() => {
+          this.checkIfRefreshNeeded(globalStates.token).then(res => {
+            if (res === true) {
+              console.log('Refreshing token');
+              this.refreshApiToken(refreshToken);
+            }
+          });
+        }, 1 * 60 * 1000);
+      }
 
       if (token) {
+
         globalStates.token = token;
+        globalStates.public_id = jwt_decode(token).public_id;
 
         let decodedToken = jwt_decode(token);
         let decodedRefreshToken = jwt_decode(refreshToken);
@@ -163,46 +169,3 @@ export default class App extends Component {
     );
   }
 }
-
-// export default function App() {
-
-//   const [loading, setLoading] = useState(true);
-
-//   let initRoute = null;
-//   let token = '';
-
-//   useEffect(() => {
-//     setLoading(true);
-//     getToken().then(res => {
-//       token = res;
-
-//       if (token !== null) {
-//         initRoute = 'Challenges';
-//       } else {
-//         initRoute = 'Login';
-//       }
-
-//       setLoading(false);
-//     }
-//     );
-//   }, []);
-
-//   return (
-//     {!loading ? <Loading/> 
-//       :
-//         <SafeAreaProvider>
-//           <NavigationContainer>
-//             <Stack.Navigator initialRouteName={initRoute}>
-//               <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
-//               <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
-//               <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
-//               <Stack.Screen name="Challenges" component={Challenges} options={{ headerShown: false }} />
-
-//               {/* TEST PAGE FOR DEBUGGING PURPOSES ONLY - REMOVE BEFORE RELEASE */}
-//               <Stack.Screen name="TestP" component={TestPage} options={{ headerShown: false }} />
-//             </Stack.Navigator>
-//           </NavigationContainer>
-//         </SafeAreaProvider>
-//     }
-//   );
-// }

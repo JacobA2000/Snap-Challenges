@@ -12,43 +12,49 @@ import {
 // STYLE IMPORTS
 import { altColor1, altColor2 } from '../../theme-handler.js';
 
-import { getMultipleValuesFromAsyncStorage } from '../../AsyncStorage-Handler.js';
+import { useNavigation } from '@react-navigation/native';
 
 import { API_URL } from '../../serverconf.js';
+import globalStates from '../../global-states.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const BottomBar = ({ navigation })  => {
+const BottomBar = ()  => {
     const [isLoading, setIsLoading] = useState(true);
     const [avatar_url, setAvatarUrl] = useState('');
 
-    React.useEffect(() => {
-        getMultipleValuesFromAsyncStorage(['@public_id', '@token']).then(storedData => {
-            let public_id = storedData[0][1];
-            let token = storedData[1][1];
+    const navigation = useNavigation();
 
-            if (public_id) {
-                fetch (API_URL + 'users/' + public_id, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Access-Token': token
+    React.useEffect(() => {
+        // GET TOKEN AND PUBLIC ID FROM GLOBAL STATE
+        let public_id = globalStates.public_id;
+        let token = globalStates.token;
+
+        if (public_id && token) {
+            // FETCH USER DATA FROM API AND CATCH ANY ERRORS
+            fetch (API_URL + 'users/' + public_id, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Token': token
+                }
+            }).then(response => {
+                response.json().then(data => ({
+                    data: data,
+                    status: response.status
+                }))
+                .then(res => {
+                    if (res.status === 200) {
+                        setAvatarUrl(res.data.avatar_url);
+                        setIsLoading(false);
                     }
-                }).then(response => {
-                    response.json().then(data => ({
-                        data: data,
-                        status: response.status
-                    }))
-                    .then(res => {
-                        if (res.status === 200) {
-                            setAvatarUrl(res.data.avatar_url);
-                            setIsLoading(false);
-                        }
-                    });
                 });
-            }
-        });
+            })
+            .catch(error => {
+                console.log(error);
+            });
+        }
     }, []);
 
     function handleChallengesButtonClick() {

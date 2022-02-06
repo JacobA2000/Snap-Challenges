@@ -1,5 +1,5 @@
 // REACT IMPORTS
-import React from 'react';
+import React, { useEffect } from 'react';
 import { 
   Dimensions, 
   StyleSheet, 
@@ -20,6 +20,9 @@ import { textColor, altColor2, statusBarTheme } from '../theme-handler.js';
 import Topbar from './global-components/topbar.js';
 import BottomBar from './global-components/bottombar.js';
 import ImageGrid from './global-components/imagegrid.js';
+import { API_URL, CDN_URL } from '../serverconf.js';
+
+import globalStates from '../global-states.js';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -41,17 +44,26 @@ const StatCounter = ({title, value}) => {
     );
 }
 
-const ProfileDescriptionStats = () => {
+const ProfileDescriptionStats = ({avatar_url, username, country_code, bio, numPosts, kudos}) => {
+    if(bio == null) {
+        bio = "User doesn't have a bio.";
+    }
+
+    if(country_code == null) {
+        country_code = "blank";
+    }
+
     return (
         <View style={styles.profileDescStatsContainer}>
             <View style={styles.profileDescription}>
-                <Image style={GlobalStyles.avatarImage} source={{uri: "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60"}} />
+                <Image style={GlobalStyles.avatarImage} source={{uri: avatar_url}} />
                 <View style={styles.profileDescriptionTextContainer}>
                     <View style={styles.usernameFlagContainer}>
-                        <Text style={styles.usernameText} numberOfLines={1}>@username</Text>
-                        <Image style={styles.flagImage} source={require("../../assets/flags/gb.png")} />
+                        <Text style={styles.usernameText} numberOfLines={1}>{username}</Text>
+                        <Image style={styles.flagImage} source={{uri: CDN_URL + 'assets/images/static/flags/' + country_code.toLowerCase() + '.png'}} />
+
                     </View>
-                    <Text style={styles.bioText} numberOfLines={4}>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque libero sem, posuere vel massa vestibulum, maximus rutrum nisl. Nam sed orci dui. Praesent at mi efficitur, volutpat tortor tincidunt, molestie nulla. Nulla vel ultricies nibh, ac tempor sem. Morbi elementum quam ut eros dapibus, eget maximus libero malesuada. Phasellus lobortis feugiat erat, sit amet fermentum mi. Sed rhoncus gravida turpis eu rutrum. Aliquam placerat elementum orci, tempor faucibus lorem sagittis in. Curabitur malesuada, est non ornare ornare, orci quam efficitur neque, vel efficitur dui lorem id est. Vestibulum elit leo, pretium ac erat et, mollis dignissim enim.</Text>
+                    <Text style={styles.bioText} numberOfLines={4}>{bio}</Text>
                 </View>
             </View>
             <View style={styles.profileStats}>
@@ -63,8 +75,8 @@ const ProfileDescriptionStats = () => {
                 </View>
                 
                 <View style={styles.profileStatsCounterList}>
-                    <StatCounter title="Posts" value="0" />
-                    <StatCounter title="Kudos Recieved" value="0" />
+                    <StatCounter title="Posts" value={numPosts} />
+                    <StatCounter title="Kudos Recieved" value={kudos} />
                 </View>
 
             </View>
@@ -73,17 +85,139 @@ const ProfileDescriptionStats = () => {
 }        
 
 const Profile = ()  => {
-    let image_path = "https://images.unsplash.com/photo-1518791841217-8f162f1e1131?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=800&q=60";
+    const [avatarUrl, setAvatarUrl] = React.useState(null);
+    const [username, setUsername] = React.useState('');
+    const [countryCode, setCountryCode] = React.useState('');
+    const [bio, setBio] = React.useState('');
+    const [numPosts, setNumPosts] = React.useState(0);
+    const [kudos, setKudos] = React.useState(0);
 
-    let imgs = [image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path, image_path]
-    //let imgs = [];
+    const [imgs, setImgs] = React.useState([]);
+
+    const [isProfileLoading, setIsProfileLoading] = React.useState(true);
+    const [isImageGridLoading, setIsImageGridLoading] = React.useState(true);
+
+    let imgUrls = [];
+
+    useEffect(() => {
+        //GET PROFILE DATA FROM API
+        fetch(API_URL + 'users/me', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Token': globalStates.token
+            }
+        }).then(response => response.json())
+        .then(responseJson => {
+            let profileData = responseJson;
+            setAvatarUrl(profileData.avatar_url);
+            setUsername(profileData.username);
+            setBio(profileData.bio);
+
+            //GET COUNTRY CODE
+            fetch(API_URL + 'countries/' + profileData.country_id, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Access-Token': globalStates.token
+                }
+            }).then(response => response.json())
+            .then(responseJson => {
+                let countryData = responseJson;
+                setCountryCode(countryData.code);
+                setIsProfileLoading(false);
+            }
+            ).catch(error => {
+                console.error(error);
+            });
+        })
+        .catch(error => {
+            console.error(error);
+        });
+        
+        // FETCH CURRENT USERS POSTS FROM SERVER
+        fetch(API_URL + 'users/me/posts', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Token': globalStates.token
+            }
+        })
+        .then(response => response.json())
+        .then(responseJson => {
+
+            let postData = responseJson;
+            let posts = postData.posts;
+
+            console.log(posts.length);
+            console.log(posts.length);
+
+            setNumPosts(posts.length);
+
+            // LOOP THOROUGH EACH POST GETTING THE IMAGE_URL AND KUDOS
+            let kudosTotal = 0;
+            for(let i = 0; i < posts.length; i++) {
+                fetch(API_URL + 'posts/' + posts[i].post_id, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Access-Token': globalStates.token
+                    }
+                })
+                .then(response => response.json())
+                .then(responseJson => {
+                    let post = responseJson;
+
+                    kudosTotal += post.upvotes;
+                    setKudos(kudosTotal);
+
+                    // GET IMAGE URL FROM THE PHOTO API
+                    fetch(API_URL + 'photos/' + post.photo_id, {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Access-Token': globalStates.token
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(responseJson => {
+                        imgUrls.push(responseJson.url);
+
+                        if(imgUrls.length == posts.length) {
+                            setImgs(imgUrls);
+                            setIsImageGridLoading(false);
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+                })
+                .catch(error => {
+                    console.error(error);
+                }
+                );
+            }
+        })
+        .catch(error => {
+            console.log(error);
+        });
+    }, []);
+
+    
+
+    
+
+    if ( isProfileLoading && isImageGridLoading ) {
+        return null;
+    }
 
     return (
         <SafeAreaView style={GlobalStyles.centeredContainer}>
             <StatusBar style={statusBarTheme} />
             <Topbar />
 
-            <ProfileDescriptionStats />
+            <ProfileDescriptionStats avatar_url={avatarUrl} username={username} country_code={countryCode} bio={bio} numPosts={numPosts} kudos={kudos} />
+            
             <ImageGrid images={imgs} />
 
             <BottomBar />

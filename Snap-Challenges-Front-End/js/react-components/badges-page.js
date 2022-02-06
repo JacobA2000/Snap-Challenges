@@ -28,30 +28,18 @@ import { getValue } from '../AsyncStorage-Handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const ChallengesPage = ({ navigation })  => {
+const BadgesPage = ({ navigation })  => {
 
-    // SEND A REQUEST TO THE SERVER TO GET THE CHALLENGES
-    // CHALLENGES WILL BE STORED IN THE VARIABLE CHALLENGES
-    // CHALLENGES WILL BE AN ARRAY OF OBJECTS
-    // EACH OBJECT WILL HAVE THE FOLLOWING PROPERTIES:
-    // id, title, desc, time_left, author
-    let challenges = []
-
-    //fetch(API_URL + 'challenges')
 
     return (
         <SafeAreaView style={ GlobalStyles.listContainer }>
             <StatusBar style={ statusBarTheme } />
             <TopBar />
-            <ChallengeList challenges={challenges} />
 
-            <BottomBar />
+
 
         </SafeAreaView>
     );
 }
 
-
-
-
-export default ChallengesPage;
+export default BadgesPage;

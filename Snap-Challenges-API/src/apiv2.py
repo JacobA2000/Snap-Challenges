@@ -412,6 +412,44 @@ def delete_user(current_user, user_public_id):
 
     # Return a success code
     return "", 204
+
+#region: USER POSTS API ENDPOINT
+@app.route("/api/users/<string:user_public_id>/posts", methods=["GET"])
+@token_required
+def get_user_posts(current_user, user_public_id):
+    """
+    This function returns a list of all posts for a user.
+    """
+
+    # Query the user_has_posts_table for the user
+    user_posts = UserHasPostsModel.query.filter_by(user_public_id=user_public_id).all()
+
+    # Check if there are any posts
+    if user_posts is None:
+        return jsonify({"message": "No posts found."}), 404
+
+    # Return the posts
+    return jsonify(posts=[post.serialize() for post in user_posts]), 200
+
+@app.route("/api/users/me/posts", methods=["GET"])
+@token_required
+def get_current_user_posts(current_user):
+    """
+    This function returns a list of all posts for the current user.
+    """
+
+    # Query the user_has_posts_table for the user
+    user_posts = UserHasPostsModel.query.filter_by(user_id=current_user.public_id).all()
+
+    # Check if there are any posts
+    if user_posts is None:
+        return jsonify({"message": "No posts found."}), 404
+
+    # Return the posts
+    return jsonify(posts=[post.serialize() for post in user_posts]), 200
+
+#endregion
+
 #endregion
 
 #region: REGISTER API ENDPOINT
@@ -718,4 +756,4 @@ def delete_challenge(current_user, challenge_id):
 #endregion
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')

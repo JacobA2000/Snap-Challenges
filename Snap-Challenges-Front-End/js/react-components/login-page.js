@@ -19,6 +19,7 @@ import base64 from 'base-64';
 import globalStyles from '../global-styles.js';
 import { storeValueInAsyncStorage } from '../AsyncStorage-Handler.js';
 import { API_URL } from '../serverconf.js';
+import globalStates from '../global-states.js';
 
 import jwt_decode from 'jwt-decode';
 
@@ -49,6 +50,9 @@ const Login = ({ navigation })  => {
 
           let decodedToken = jwt_decode(res.data.token);
           storeValueInAsyncStorage('@public_id', decodedToken.public_id);
+          
+          globalStates.token = res.data.token;
+          globalStates.public_id = decodedToken.public_id;
 
           navigation.navigate('Challenges');
         } else {

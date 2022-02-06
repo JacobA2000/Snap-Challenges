@@ -29,7 +29,7 @@ const ImageGrid = ({images})  => {
         }
     } else {
         imageGrid.push(
-            <Text style={styles.noImageText}> NO IMAGES POSTED YET </Text>
+            <Text key='no-value-text' style={styles.noImageText}> NO IMAGES POSTED YET </Text>
         );
     }
 
