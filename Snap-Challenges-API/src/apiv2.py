@@ -621,48 +621,6 @@ def create_country(current_user):
     # Return the country
     return jsonify(country.serialize()), 201
 
-@app.route("/api/countries/<int:country_id>", methods=["PUT"])
-@token_required
-def update_country(current_user, country_id):
-    """
-    This function updates a country.
-    """
-    # Get the data from the request
-    data = request.get_json()
-
-    # Check if the data is valid
-    if not data:
-        return jsonify({"message": "No data provided."}), 400
-
-    # Get the country
-    country = CountryModel.query.get(country_id)
-
-    # Update the country
-    country.name = data["name"] if ("name" in data.keys()) and (data["name"] != None) else country.name
-    country.code = data["code"] if ("code" in data.keys()) and (data["code"] != None) else country.code
-
-    # Add the country to the database
-    db.session.commit()
-
-    # Return the country
-    return jsonify(country.serialize()), 204
-
-@app.route("/api/countries/<int:country_id>", methods=["DELETE"])
-@token_required
-def delete_country(current_user, country_id):
-    """
-    This function deletes a country.
-    """
-    # Get the country
-    country = CountryModel.query.get(country_id)
-
-    # Delete the country
-    db.session.delete(country)
-    db.session.commit()
-
-    # Return a success message
-    return "", 204
-
 #endregion
 
 #region: CHALLENGE API ENDPOINT
