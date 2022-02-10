@@ -422,7 +422,7 @@ def get_user_posts(current_user, user_public_id):
     """
 
     # Query the user_has_posts_table for the user
-    user_posts = UserHasPostsModel.query.filter_by(user_public_id=user_public_id).all()
+    user_posts = UserHasPostsModel.query.filter_by(user_id=user_public_id).all()
 
     # Check if there are any posts
     if user_posts is None:
@@ -518,7 +518,7 @@ def login():
             {
                 'public_id' : user.public_id,
                 'scope' : 'user',
-                'exp' : datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
+                'exp' : datetime.datetime.utcnow() + datetime.timedelta(days=12)
             }, 
             app.config['SECRET_KEY']
         )

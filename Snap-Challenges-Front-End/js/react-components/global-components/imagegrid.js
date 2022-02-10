@@ -7,26 +7,34 @@ import {
     ScrollView, 
     Image,
     TouchableOpacity,
-    Text
+    Text,
+    Platform
 } from 'react-native';
 
 // STYLE IMPORTS
 import { altColor1, textColor } from '../../theme-handler.js';
 
 const windowWidth = Dimensions.get('window').width;
+const windowHeight = Dimensions.get('window').height;
 
 const ImageGrid = ({images})  => {
 
     let imageGrid = [];
 
     if(images.length > 0) {
-        for(let i = 0; i < images.length; i++) {
+        let count = 0;
+
+        images.forEach(image => {
+            
             imageGrid.push(
-                <TouchableOpacity key={i} style={styles.imageGridItem} onPress={() => alert(i)}>
-                    <Image style={styles.imageGridImage} source={{uri: images[i]}} />
+                <TouchableOpacity key={count} style={Platform.OS === 'android' || Platform.OS === 'ios' ? styles.mobileImageGridItem : styles.webImageGridImage} onPress={() => alert(image.post_id)}>
+                    <Image style={Platform.OS === 'android' || Platform.OS === 'ios' ? styles.mobileImageGridImage : styles.webImageGridImage} source={{uri: image.url}} />
                 </TouchableOpacity>
             );
-        }
+
+            count +=1;
+        });
+            
     } else {
         imageGrid.push(
             <Text key='no-value-text' style={styles.noImageText}> NO IMAGES POSTED YET </Text>
@@ -49,9 +57,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingHorizontal: 5,
+
+        width: windowWidth - 20,
     },
 
-    imageGridItem: {
+    mobileImageGridItem: {
         width: windowWidth * 0.3,
         height: windowWidth * 0.3,
         backgroundColor: altColor1,
@@ -62,10 +72,31 @@ const styles = StyleSheet.create({
         marginVertical: 5,
     },
 
-    imageGridImage: {
+    mobileImageGridImage: {
         width: windowWidth * 0.3,
         height: windowWidth * 0.3,
         resizeMode: 'cover',
+
+        marginVertical: 5,
+    },
+
+    webImageGridItem: {
+        width: windowHeight * 0.4,
+        height: windowHeight * 0.4,
+        backgroundColor: altColor1,
+        borderRadius: 10,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        marginVertical: 5,
+    },
+
+    webImageGridImage: {
+        width: windowHeight * 0.4,
+        height: windowHeight * 0.4,
+        resizeMode: 'cover',
+
+        marginVertical: 5,
     },
 
     noImageText: {

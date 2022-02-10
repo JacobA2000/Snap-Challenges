@@ -67,7 +67,7 @@ const BottomBar = ()  => {
     }
 
     function handleProfileButtonClick() {
-        navigation.navigate('Profile');
+        navigation.navigate('Profile', globalStates.public_id);
     }
 
     if (isLoading) {

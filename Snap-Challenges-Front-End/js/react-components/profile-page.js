@@ -84,7 +84,10 @@ const ProfileDescriptionStats = ({avatar_url, username, country_code, bio, numPo
     );
 }        
 
-const Profile = ()  => {
+const Profile = ({route})  => {
+
+    const public_id = route.params;
+
     const [avatarUrl, setAvatarUrl] = React.useState(null);
     const [username, setUsername] = React.useState('');
     const [countryCode, setCountryCode] = React.useState('');
@@ -97,11 +100,11 @@ const Profile = ()  => {
     const [isProfileLoading, setIsProfileLoading] = React.useState(true);
     const [isImageGridLoading, setIsImageGridLoading] = React.useState(true);
 
-    let imgUrls = [];
+    let imgsList = [];
 
     useEffect(() => {
         //GET PROFILE DATA FROM API
-        fetch(API_URL + 'users/me', {
+        fetch(API_URL + 'users/' + public_id, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -136,7 +139,7 @@ const Profile = ()  => {
         });
         
         // FETCH CURRENT USERS POSTS FROM SERVER
-        fetch(API_URL + 'users/me/posts', {
+        fetch(API_URL + 'users/' + public_id + '/posts', {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -148,9 +151,6 @@ const Profile = ()  => {
 
             let postData = responseJson;
             let posts = postData.posts;
-
-            console.log(posts.length);
-            console.log(posts.length);
 
             setNumPosts(posts.length);
 
@@ -181,10 +181,11 @@ const Profile = ()  => {
                     })
                     .then(response => response.json())
                     .then(responseJson => {
-                        imgUrls.push(responseJson.url);
 
-                        if(imgUrls.length == posts.length) {
-                            setImgs(imgUrls);
+                        imgsList.push({post_id: posts[i].post_id, url:responseJson.url});
+
+                        if(imgsList.length == posts.length) {
+                            setImgs(imgsList);
                             setIsImageGridLoading(false);
                         }
                     })
@@ -202,10 +203,6 @@ const Profile = ()  => {
             console.log(error);
         });
     }, []);
-
-    
-
-    
 
     if ( isProfileLoading && isImageGridLoading ) {
         return null;
