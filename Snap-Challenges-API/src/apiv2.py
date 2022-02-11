@@ -428,6 +428,9 @@ def get_user_posts(current_user, user_public_id):
     if user_posts is None:
         return jsonify({"message": "No posts found."}), 404
 
+    # Sort the posts by date posted
+    user_posts = sorted(user_posts, key=lambda k: k.post_id, reverse=True)
+
     # Return the posts
     return jsonify(posts=[post.serialize() for post in user_posts]), 200
 
