@@ -249,6 +249,8 @@ const PostPage = ({navigation, route, post_id})  => {
                     resizeMode='cover'
                     blurRadius={4}
                 >
+                    <View style={styles.postImageOverlay} />
+
                     <Image
                         style={styles.postImage}
                         source={{uri: post_image_url}}
@@ -287,7 +289,10 @@ const cameraInfoStyles = StyleSheet.create({
         alignItems: 'flex-start',
         paddingHorizontal: 5,
         paddingVertical: 10,
-        backgroundColor: altColor2,
+        //backgroundColor: altColor2,
+        borderWidth:5,
+        borderColor: altColor2,
+        borderTopWidth: 0,
     },
 
     cameraInfoRow: {
@@ -328,7 +333,10 @@ const voteStyles = StyleSheet.create({
         alignItems: 'center',
         padding: 5,
 
-        backgroundColor: altColor2,
+        //backgroundColor: altColor2,
+        borderBottomWidth:5,
+        borderBottomColor: altColor2,
+
     },
 
     kudosContainer: {
@@ -403,10 +411,22 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 
+    postImageOverlay: {
+        width: windowWidth,
+        height: windowHeight * 0.6,
+        backgroundColor: 'black',
+        opacity: 0.3,
+
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        position: 'absolute',
+    },
+
     postImage: {
         width: "90%",
         height: "90%",
-        resizeMode: 'contain',
+        resizeMode: 'contain'
     },
 
     postDescriptionContainer: {
