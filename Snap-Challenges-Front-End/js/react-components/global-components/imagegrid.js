@@ -1,4 +1,5 @@
 // REACT IMPORTS
+import { useNavigation } from '@react-navigation/native';
 import React from 'react';
 import { 
     Dimensions, 
@@ -17,9 +18,18 @@ import { altColor1, textColor } from '../../theme-handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+
+
 const ImageGrid = ({images})  => {
 
     let imageGrid = [];
+
+    const navigation = useNavigation();
+
+    let goToPost = (postId) => {
+        console.log(postId);
+        navigation.navigate('Post', {post_id: postId});
+    }
 
     if(images.length > 0) {
         let count = 0;
@@ -27,7 +37,7 @@ const ImageGrid = ({images})  => {
         images.forEach(image => {
             
             imageGrid.push(
-                <TouchableOpacity key={count} style={Platform.OS === 'android' || Platform.OS === 'ios' ? styles.mobileImageGridItem : styles.webImageGridImage} onPress={() => alert(image.post_id)}>
+                <TouchableOpacity key={count} style={Platform.OS === 'android' || Platform.OS === 'ios' ? styles.mobileImageGridItem : styles.webImageGridImage} onPress={() => goToPost(image.post_id)}>
                     <Image style={Platform.OS === 'android' || Platform.OS === 'ios' ? styles.mobileImageGridImage : styles.webImageGridImage} source={{uri: image.url}} />
                 </TouchableOpacity>
             );

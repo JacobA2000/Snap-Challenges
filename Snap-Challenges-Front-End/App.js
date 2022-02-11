@@ -192,7 +192,7 @@ export default class App extends Component {
     return (
       <SafeAreaProvider>
           <NavigationContainer ref={navigationRef}>
-            <Stack.Navigator initialRouteName={/*this.state.initRoute*/"Post"}>
+            <Stack.Navigator initialRouteName={this.state.initRoute}>
               <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
               <Stack.Screen name="SignUp" component={SignUp} options={{ headerShown: false }} />
               <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
