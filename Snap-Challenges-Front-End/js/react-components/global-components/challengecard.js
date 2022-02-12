@@ -14,30 +14,65 @@ import {
 // STYLE IMPORTS
 import { altColor1, altColor2, textColor } from '../../theme-handler.js';
 
+import { useNavigation } from '@react-navigation/native';
+
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const ChallengeCard = ({id, title, desc, time_left, author_id})  => {
+const ChallengeCard = ({id, title, desc, end_date, timesCompleted})  => {
+
+    const navigation = useNavigation();
+
+    //Convert end date to a date object
+    let endDate = new Date(end_date);
+
+    //Calculate time left for challenge
+    let timeLeft = endDate - Date.now();
+    let timeLeftDays = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+    let timeLeftHours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+    let timeLeftMinutes = Math.floor((timeLeft / 1000 / 60) % 60);
+
+    let timeLeftDisplayed = '';
+
+    console.log('Time left: ' + timeLeft);
+
+    if(timeLeftDays > 0) {
+        timeLeftDisplayed = timeLeftDays + 'd';
+    } else if(timeLeftHours > 0) {
+        timeLeftDisplayed = timeLeftHours + 'h';
+    } else {
+        timeLeftDisplayed = timeLeftMinutes + 'm';
+    }
 
     return (
-        <TouchableOpacity style={styles.imageGridItem} onPress={() => alert(id)}>
+        <TouchableOpacity style={styles.imageGridItem} onPress={
+            () => 
+            navigation.navigate("Challenge", {
+                id: id, 
+                title: title, 
+                desc: desc,
+                end_date: end_date,
+                timesCompleted: timesCompleted
+            }
+        )}>
             <View style={styles.cardContainer}>
                 <View style={styles.cardHeader}>
-                    <Text style={styles.cardTitle}> {title} </Text>
+                    <Text style={styles.cardTitle}>{title}</Text>
                     <View style={styles.cardTimeLeft}>
                         <View style={styles.cardTimeLeftIcon}>
                             <Image style={styles.cardTimeLeftIconImage} source={require("../../../assets/menu-icons/clock.png")} />
                         </View>
-                        <Text style={styles.cardTimeLeftText}> {time_left} </Text>
+                        <Text style={styles.cardTimeLeftText}>{timeLeftDisplayed}</Text>
                     </View>
                 </View>
                 <View style={styles.cardBody}>
-                    <Text style={styles.cardDesc}> {desc} </Text>
+                    <Text style={styles.cardDesc}>{desc}</Text>
                 </View>
                 <View style={styles.cardFooter}>
                     <View style={styles.cardFooterLeft}>
-                        <Image style={styles.cardAuthorImage} source={{uri: "https://www.w3schools.com/howto/img_avatar2.png"}} />
-                        <Text style={styles.cardAuthor}> {author_id} </Text>
+                        <Text style={styles.cardTimesCompleted}>Entries Submitted:</Text>
+                        <Text style={styles.cardTimesCompleted}> {timesCompleted} </Text>
                     </View>
                     <View style={styles.cardFooterRight}>
                         <TouchableHighlight style={styles.cardFooterRightButton}>
@@ -127,17 +162,10 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
 
-    cardAuthorImage: {
-        width: 40,
-        height: 40,
-        borderRadius: 360,
-        resizeMode: "contain",
-    },
-
-    cardAuthor: {
-        paddingLeft: 10,
+    cardTimesCompleted: {
         fontSize: 15,
         fontFamily: "Roboto",
+        fontWeight: "bold",
         color: textColor,
     },
 

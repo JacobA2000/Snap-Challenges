@@ -15,15 +15,18 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const TopBar = ()  => {
-  return (
-    <View style={styles.topbarContainer}>
-        <Image style={styles.topbarLogo} source={require('../../../assets/snap-challenges-logos/text-logo.png')} />
 
-        <TouchableOpacity style={styles.topbarNotificationButton} title="Notification" onPress={() => {alert("TEST")}}>
-            <Image style={styles.topbarNotificationButtonImage}source={require('../../../assets/menu-icons/bell-icon.png')}/>
-        </TouchableOpacity> 
-    </View>
-  );
+    return (
+        <View style={styles.topbarContainer}>
+            <Image style={styles.topbarLogo} source={require('../../../assets/snap-challenges-logos/text-logo.png')} />
+
+            <View style={styles.topbarRightContainer}>
+                <TouchableOpacity style={styles.topBarButton} title="Notification" onPress={() => {alert("TEST")}}>
+                    <Image style={styles.topBarButtonImage} source={require('../../../assets/menu-icons/bell-icon.png')}/>
+                </TouchableOpacity> 
+            </View>
+        </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -46,18 +49,26 @@ const styles = StyleSheet.create({
         left: 0,
     },
 
-    topbarNotificationButton: {
+    topbarRightContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+    },
+
+    topBarButton: {
         width: windowHeight * 0.05,
         height: windowHeight * 0.05,
         backgroundColor: altColor2,
         borderRadius: windowHeight * 0.1,
         justifyContent: 'center',
         alignItems: 'center',
+
+        marginRight: 10,
     },
 
-    topbarNotificationButtonImage: {
-        width: windowHeight * 0.05,
-        height: windowHeight * 0.05,
+    topBarButtonImage: {
+        width: windowHeight * 0.04,
+        height: windowHeight * 0.04,
         resizeMode: 'contain',
     },
 

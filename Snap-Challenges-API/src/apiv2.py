@@ -451,6 +451,24 @@ def get_current_user_posts(current_user):
     # Return the posts
     return jsonify(posts=[post.serialize() for post in user_posts]), 200
 
+@app.route("/api/users/posts/<int:post_id>", methods=["GET"])
+@token_required
+def get_user_from_post_id(current_user, post_id):
+    """
+    This function returns the user that posted a post.
+    """
+
+    # Query the user_has_posts_table for the user
+    user_posts = UserHasPostsModel.query.filter_by(post_id=post_id).first()
+
+    user = UserModel.query.filter_by(public_id=user_posts.user_id).first()
+
+    # Check if there are any posts
+    if user is None:
+        return jsonify({"message": "No user found."}), 404
+
+    # Return the posts
+    return jsonify(user.serialize()), 200
 #endregion
 
 #endregion
@@ -633,7 +651,12 @@ def get_active_challenges(current_user):
     """
     Returns a list of all challenges.
     """
-    challenges = ChallengeModel.query.all().filter_by(ChallengeModel.end_date >= datetime.datetime.now())
+    #get all the challenges thats end date is greater than now
+    challenges = ChallengeModel.query.filter(ChallengeModel.end_date > datetime.datetime.now()).all()
+
+    #sort the challenges by start date
+    challenges = sorted(challenges, key=lambda x: x.start_date)
+
     return jsonify(challenges=[challenge.serialize() for challenge in challenges]), 200
 
 @app.route("/api/challenges/<int:challenge_id>", methods=["GET"])
@@ -712,6 +735,71 @@ def delete_challenge(current_user, challenge_id):
 
     else :
         return jsonify({"message": "You are not authorized to delete this challenge."}), 401
+
+#region: CHALLENGE HAS POSTS API ENDPOINT
+@app.route("/api/challenges/<int:challenge_id>/posts", methods=["GET"])
+@token_required
+def get_challenge_posts(current_user, challenge_id):
+    """
+    Returns a list of all posts of a challenge.
+    """
+    #get all the posts of a challenge
+    posts = ChallengeHasPostsModel.query.filter_by(challenge_id=challenge_id).all()
+
+    #sort the posts by id
+    posts = sorted(posts, key=lambda x: x.post_id, reverse=True)
+
+    return jsonify(posts=[post.serialize() for post in posts]), 200
+
+@app.route("/api/challenges/<int:challenge_id>/posts", methods=["POST"])
+@token_required
+def create_challenge_post(current_user, challenge_id):
+    """
+    This function creates a new post of a challenge.
+    """
+    # Get the data from the request
+    data = request.get_json()
+
+    # Check if the data is valid
+    if not data:
+        return jsonify({"message": "No data provided."}), 400
+
+    # Create the post
+    post = ChallengeHasPostsModel(
+        challenge_id=challenge_id,
+        post_id=data["post_id"]
+    )
+
+    # Add the post to the database
+    db.session.add(post)
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 201
+
+@app.route("/api/challenges/<int:challenge_id>/posts/<int:post_id>", methods=["DELETE"])
+@token_required
+def delete_challenge_post(current_user, challenge_id, post_id):
+    """
+    This function deletes a post of a challenge.
+    """
+
+    if current_user.is_admin:
+        # Get the post
+        post = ChallengeHasPostsModel.query.get((challenge_id, post_id))
+
+        # Delete the post
+        db.session.delete(post)
+        db.session.commit()
+
+        # Return a success message
+        return "", 204
+
+    else :
+        return jsonify({"message": "You are not authorized to delete this post."}), 401
+
+#endregion
+
 #endregion
 
 #endregion

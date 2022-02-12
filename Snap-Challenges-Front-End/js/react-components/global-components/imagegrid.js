@@ -27,7 +27,6 @@ const ImageGrid = ({images})  => {
     const navigation = useNavigation();
 
     let goToPost = (postId) => {
-        console.log(postId);
         navigation.navigate('Post', {post_id: postId});
     }
 
@@ -79,15 +78,13 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
 
-        marginVertical: 5,
+        marginTop: 5,
     },
 
     mobileImageGridImage: {
         width: windowWidth * 0.3,
         height: windowWidth * 0.3,
         resizeMode: 'cover',
-
-        marginVertical: 5,
     },
 
     webImageGridItem: {
@@ -97,8 +94,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         justifyContent: 'center',
         alignItems: 'center',
-
-        marginVertical: 5,
     },
 
     webImageGridImage: {
@@ -106,7 +101,7 @@ const styles = StyleSheet.create({
         height: windowHeight * 0.4,
         resizeMode: 'cover',
 
-        marginVertical: 5,
+        marginTop: 5,
     },
 
     noImageText: {

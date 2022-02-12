@@ -13,8 +13,9 @@ import jwt_decode from 'jwt-decode';
 import Login from './js/react-components/login-page.js';
 import SignUp from './js/react-components/sign-up-page.js';
 import Profile from './js/react-components/profile-page.js';
-import Challenges from './js/react-components/challenges-page.js';
+import Challenges from './js/react-components/challenges-list-page.js';
 import Post from './js/react-components/post-page.js';
+import Challenge from './js/react-components/challenge-page.js';
 
 import TestPage from './js/react-components/test-page.js';
 
@@ -198,6 +199,7 @@ export default class App extends Component {
               <Stack.Screen name="Profile" component={Profile} options={{ headerShown: false }} />
               <Stack.Screen name="Challenges" component={Challenges} options={{ headerShown: false }} />
               <Stack.Screen name="Post" component={Post} options={{ headerShown: false }} />
+              <Stack.Screen name="Challenge" component={Challenge} options={{ headerShown: false }} />
 
               {/* TEST PAGE FOR DEBUGGING PURPOSES ONLY - REMOVE BEFORE RELEASE */}
               <Stack.Screen name="TestP" component={TestPage} options={{ headerShown: false }} />

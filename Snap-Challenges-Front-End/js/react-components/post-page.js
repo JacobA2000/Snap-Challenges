@@ -183,6 +183,9 @@ const PostPage = ({navigation, route, post_id})  => {
     const [dateTaken, setDateTaken] = React.useState('');
 
     const [postedAt, setPostedAt] = React.useState('');
+    const [postedByUserID, setPostedByUserID] = React.useState('');
+    const [postedBy, setPostedBy] = React.useState('');
+    const [postedByImage, setPostedByImage] = React.useState('');
 
     useEffect(() => {
         //FETCH THE POST DATA
@@ -231,6 +234,26 @@ const PostPage = ({navigation, route, post_id})  => {
         .catch(error => {
             console.log(error);
         });
+
+        //FETCH THE USER DATA
+        fetch(`${API_URL}users/posts/${post_id}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Token': globalStates.token
+                }
+            })
+            .then(response => response.json())
+            .then(responseJson => {
+                setPostedByUserID(responseJson.public_id);
+                setPostedBy(responseJson.username);
+                setPostedByImage(responseJson.avatar_url);
+                
+            }
+        )
+        .catch(error => {
+            console.log(error);
+        });
     }, []);
 
     if (isLoading) {
@@ -262,6 +285,18 @@ const PostPage = ({navigation, route, post_id})  => {
                         <VoteComponent kudos={kudos} downvotes={downvotes} />
                     
                         <Text style={styles.postDescription}>{post_description}</Text>
+
+                        <Text style={styles.postedAt}>Posted: {postedAt}</Text>
+
+                        <TouchableOpacity style={styles.postAuthor} onPress={() => {
+                            navigation.navigate('Profile', postedByUserID);
+                        }}>
+                            <Image
+                                style={styles.postAuthorImage}
+                                source={{uri: postedByImage}}
+                            />
+                            <Text style={styles.postAuthorText}>{postedBy}</Text>
+                        </TouchableOpacity>
                     
                     </View>
                     <CameraInfo 
@@ -444,6 +479,31 @@ const styles = StyleSheet.create({
         padding: 5,
 
         overflow: 'hidden'
+    },
+
+    postedAt: {
+        fontSize: 12,
+        color: textColor,
+        padding: 5, 
+    },
+
+    postAuthor: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 5,
+    },
+
+    postAuthorImage: {
+        width: windowWidth * 0.05,
+        height: windowWidth * 0.05,
+        borderRadius: windowWidth * 0.1,
+        resizeMode: 'contain',
+    },
+
+    postAuthorText: {
+        fontSize: 14,
+        color: textColor,
+        padding: 5,
     },
 });
 
