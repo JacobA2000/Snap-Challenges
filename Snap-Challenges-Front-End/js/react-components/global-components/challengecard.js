@@ -75,7 +75,7 @@ const ChallengeCard = ({id, title, desc, end_date, timesCompleted})  => {
                         <Text style={styles.cardTimesCompleted}> {timesCompleted} </Text>
                     </View>
                     <View style={styles.cardFooterRight}>
-                        <TouchableHighlight style={styles.cardFooterRightButton}>
+                        <TouchableHighlight style={styles.cardFooterRightButton} onPress={() => {navigation.navigate("PostUpload", {challengeID: id})}}>
                             <Text style={styles.cardFooterRightButtonText}> JOIN </Text>
                         </TouchableHighlight>
                     </View>
