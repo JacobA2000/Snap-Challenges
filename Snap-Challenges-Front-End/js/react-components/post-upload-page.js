@@ -21,7 +21,7 @@ import BottomBar from './global-components/bottombar.js';
 // STYLE IMPORTS
 import { altColor1, altColor2, textColor, statusBarTheme } from '../theme-handler.js';
 import globalStyles from '../global-styles.js';
-import { API_URL } from '../serverconf.js';
+import { API_URL, CDN_URL } from '../serverconf.js';
 import globalStates from '../global-states.js';
 
 import * as ImagePicker from 'expo-image-picker';
@@ -70,25 +70,34 @@ const PostUploadPage = ({route, challengeID})  => {
           }
     };
 
-    // const handleSubmit = async () => {
+    const handleSubmit = async () => {
 
-    //     if (image == null) {
-    //         alert('Please select an image to upload.');
-    //         return;
-    //     }
+        if (image == null) {
+            alert('Please select an image to upload.');
+            return;
+        }
 
-    //     let formData = new FormData();
-    //     formData.append('image', {
-    //         uri: image,
-    //         name: 'image.jpg',
-    //         type: 'image/jpg'
-    //     });
+        // UPLOAD IMAGE TO CDN SERVER
 
-    //     formData.append('exif', JSON.stringify(exif));
+        const uploadData = new FormData();
+        uploadData.append('image', {
+            uri: image,
+            name: 'image.jpg',
+            type: 'image/jpg'
+        });
 
-    //     fetch(API_URL + 'challenges/' + challengeID + '/posts', {
+        uploadData.append('user_public_id', globalStates.public_id);
 
+        fetch(CDN_URL + 'upload.php', {
+            method: 'POST',
+            body: uploadData
+        })
+        .then(response => {
+            console.log(response.text());
+        });
 
+        // SEND TO API TO STORE ON DB
+    };
 
 
     return (
@@ -121,6 +130,11 @@ const PostUploadPage = ({route, challengeID})  => {
                 <TouchableOpacity style={styles.uploadButton} onPress={takeImage}>
                     <Text style={styles.uploadButtonText}> TAKE PHOTO </Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity style={styles.uploadButton} onPress={handleSubmit}>
+                    <Text style={styles.uploadButtonText}> SUBMIT </Text>
+                </TouchableOpacity>
+
             </View>
 
             <BottomBar />
@@ -156,8 +170,8 @@ const styles = StyleSheet.create({
     },
 
     uploadButton: {
-        width: windowWidth * 0.8,
-        height: windowHeight * 0.08,
+        width: windowWidth * 0.55,
+        height: windowHeight * 0.055,
         backgroundColor: altColor1,
         borderRadius: 10,
         justifyContent: 'center',
