@@ -38,7 +38,7 @@ const ChallengeCard = ({id, title, desc, end_date, timesCompleted})  => {
     console.log('Time left: ' + timeLeft);
 
     if(timeLeftDays > 0) {
-        timeLeftDisplayed = timeLeftDays + 'd';
+        timeLeftDisplayed = timeLeftDays + 'd ' + timeLeftHours + 'h';
     } else if(timeLeftHours > 0) {
         timeLeftDisplayed = timeLeftHours + 'h';
     } else {

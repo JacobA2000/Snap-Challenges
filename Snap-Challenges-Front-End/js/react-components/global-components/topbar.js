@@ -14,13 +14,21 @@ import { altColor1, altColor2 } from '../../theme-handler.js';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const TopBar = ()  => {
-
+const TopBar = ({altButtonVisible, altButton})  => {
     return (
         <View style={styles.topbarContainer}>
             <Image style={styles.topbarLogo} source={require('../../../assets/snap-challenges-logos/text-logo.png')} />
 
             <View style={styles.topbarRightContainer}>
+
+                {/* {altButtonVisible == true ? 
+                    (<TouchableOpacity style={styles.topBarButton}>
+                        <Image style={styles.topBarButtonImage} source={require('../../../assets/menu-icons/bell-icon.png')} />
+                    </TouchableOpacity>)
+                : console.log(altButtonVisible)} */}
+
+                {altButton}
+
                 <TouchableOpacity style={styles.topBarButton} title="Notification" onPress={() => {alert("TEST")}}>
                     <Image style={styles.topBarButtonImage} source={require('../../../assets/menu-icons/bell-icon.png')}/>
                 </TouchableOpacity> 

@@ -17,6 +17,7 @@ import Challenges from './js/react-components/challenges-list-page.js';
 import Post from './js/react-components/post-page.js';
 import Challenge from './js/react-components/challenge-page.js';
 import PostUpload from './js/react-components/post-upload-page.js';
+import AddChallenge from './js/react-components/add-challenge-page.js';
 
 import TestPage from './js/react-components/test-page.js';
 
@@ -202,6 +203,7 @@ export default class App extends Component {
               <Stack.Screen name="Post" component={Post} options={{ headerShown: false }} />
               <Stack.Screen name="Challenge" component={Challenge} options={{ headerShown: false }} />
               <Stack.Screen name="PostUpload" component={PostUpload} options={{ headerShown: false }} />
+              <Stack.Screen name="AddChallenge" component={AddChallenge} options={{ headerShown: false }} />
 
               {/* TEST PAGE FOR DEBUGGING PURPOSES ONLY - REMOVE BEFORE RELEASE */}
               <Stack.Screen name="TestP" component={TestPage} options={{ headerShown: false }} />

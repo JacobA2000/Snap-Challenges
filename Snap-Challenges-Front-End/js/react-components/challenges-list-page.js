@@ -1,13 +1,16 @@
 // REACT IMPORTS
 import React, { useEffect } from 'react';
 import { 
-  Dimensions, 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput,
-  Image
+    Dimensions, 
+    StyleSheet, 
+    Text, 
+    View, 
+    TextInput,
+    Image,
+    TouchableOpacity,
 } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
 
 import { StatusBar } from 'expo-status-bar';
 
@@ -15,7 +18,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 // STYLE IMPORTS
 import GlobalStyles from '../global-styles.js';
-import { statusBarTheme } from '../theme-handler.js';
+import { statusBarTheme, altColor2 } from '../theme-handler.js';
 
 import TopBar from './global-components/topbar.js';
 import BottomBar from './global-components/bottombar.js';
@@ -84,7 +87,7 @@ const ChallengesPage = ({ navigation })  => {
     return (
         <SafeAreaView style={ GlobalStyles.listContainer }>
             <StatusBar style={ statusBarTheme } />
-            <TopBar />
+            <TopBar altButton={<AddChallengeButton/>}/>
             
             <ChallengeList challenges={challenges} />
 
@@ -94,7 +97,35 @@ const ChallengesPage = ({ navigation })  => {
     );
 }
 
+const AddChallengeButton = () => {
+    
+    const navigation = useNavigation();
 
+    return (
+        <TouchableOpacity style={styles.topBarButton} onPress={() => {navigation.navigate("AddChallenge")}}>
+            <Text style={styles.topBarButtonText}>+</Text>
+        </TouchableOpacity>
+    );
+}
 
+const styles = StyleSheet.create({
+    topBarButton: {
+        width: windowHeight * 0.05,
+        height: windowHeight * 0.05,
+        backgroundColor: altColor2,
+        borderRadius: windowHeight * 0.1,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+        marginRight: 10,
+    },
+
+    topBarButtonImage: {
+        width: windowHeight * 0.04,
+        height: windowHeight * 0.04,
+        resizeMode: 'contain',
+    },
+
+});
 
 export default ChallengesPage;
