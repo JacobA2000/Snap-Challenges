@@ -27,6 +27,8 @@ import { API_URL } from '../serverconf.js';
 
 import globalStates from '../global-states.js';
 
+import { Platform } from 'react-native';
+
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 

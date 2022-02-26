@@ -26,7 +26,6 @@ import globalStates from '../global-states.js';
 
 import * as ImagePicker from 'expo-image-picker';
 
-
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
@@ -39,6 +38,7 @@ const PostUploadPage = ({route, challengeID})  => {
 
     const [isLoading, setIsLoading] = React.useState(true);
     const [image, setImage] = React.useState(null);
+    const [base64, setBase64] = React.useState(null);
     const [exif, setExif] = React.useState(null);
 
     const [status, requestPermission] = ImagePicker.useCameraPermissions();
@@ -49,11 +49,13 @@ const PostUploadPage = ({route, challengeID})  => {
           mediaTypes: ImagePicker.MediaTypeOptions.Images,
           quality: 1,
           exif: true,
+          base64: true,
         });
     
         if (!result.cancelled) {
-          setImage(result.uri);
-          setExif(result.exif);
+            setBase64(result.base64);
+            setImage(result.uri);
+            setExif(result.exif);
         }
     };
 
@@ -62,9 +64,11 @@ const PostUploadPage = ({route, challengeID})  => {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             quality: 1,
             exif: true,
+            base64: true,
           });
       
           if (!result.cancelled) {
+            setBase64(result.base64);
             setImage(result.uri);
             setExif(result.exif);
           }
@@ -78,17 +82,12 @@ const PostUploadPage = ({route, challengeID})  => {
         }
 
         // UPLOAD IMAGE TO CDN SERVER
-
         const uploadData = new FormData();
-        uploadData.append('image', {
-            uri: image,
-            name: 'image.jpg',
-            type: 'image/jpg'
-        });
 
+        uploadData.append('image', 'data:image/jpeg;base64,' + base64);
         uploadData.append('user_public_id', globalStates.public_id);
 
-        fetch(CDN_URL + 'upload.php', {
+        await fetch(CDN_URL + 'upload.php', {
             method: 'POST',
             body: uploadData
         })
