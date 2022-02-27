@@ -60,6 +60,10 @@ const ChallengePage = ({ route })  => {
                     let posts = res.data.posts;
                     let postsData = [];
                     let postsImages = [];
+
+                    if (posts.length === 0) {
+                        setIsLoading(false);
+                    }
                     
                     posts.forEach(post => {
                         let postId = post.post_id;
@@ -129,6 +133,7 @@ const ChallengePage = ({ route })  => {
             
             <View style={ GlobalStyles.centeredContainer }>
                 <ChallengeCard id={ challengeId } title={ challengeTitle } desc={ challengeDesc } end_date={ challengeEndDate } timesCompleted={ challengeTimesCompleted } />
+                
                 <ImageGrid
                     images={images}
                 />
