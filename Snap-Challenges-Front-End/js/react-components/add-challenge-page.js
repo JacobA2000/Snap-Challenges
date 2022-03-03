@@ -32,7 +32,7 @@ import { Platform } from 'react-native';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const AddChallengePage = ()  => {
+const AddChallengePage = ({navigation})  => {
 
     //STATES
     const [title, setTitle] = React.useState('');
@@ -81,6 +81,9 @@ const AddChallengePage = ()  => {
             .then(res => {
                 if (res.status === 201) {
                     console.log('SUCCESS');
+                    alert('Challenge created successfully!');
+                    //GO BACK TO CHALLENGES PAGE
+                    navigation.goBack();
                 } else {
                     console.log('FAILURE');
                 }

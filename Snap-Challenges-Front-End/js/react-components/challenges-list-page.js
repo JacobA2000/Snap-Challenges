@@ -42,43 +42,56 @@ const ChallengesPage = ({ navigation })  => {
     const [isLoading, setIsLoading] = React.useState(true);
     const [challenges, setChallenges] = React.useState([]);
 
+    //const forceUpdate = useForceUpdate();
+
     useEffect(() => {
-        fetch(API_URL + 'challenges', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-access-token': globalStates.token
-            }
-        }).then(response => {
-            response.json().then(data => ({
-                data: data,
-                status: response.status
-            }))
-            .then(res => {
-                if (res.status === 200) {
+        navigation.addListener(
+            'focus',
+            payload => {
+                console.log("CHALLENGES FOCUSED");
 
-                    let challengesList = [];
+                setChallenges([]);
 
-                    let challengesData = res.data.challenges;
-
-                    challengesData.forEach(challenge => {
-                        let challengesListItem = {
-                            id: challenge.id,
-                            title: challenge.title,
-                            desc: challenge.description,
-                            end_date: challenge.end_date,
-                            timesCompleted: challenge.times_completed
+                fetch(API_URL + 'challenges', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-access-token': globalStates.token
+                    }
+                }).then(response => {
+                    response.json().then(data => ({
+                        data: data,
+                        status: response.status
+                    }))
+                    .then(res => {
+                        if (res.status === 200) {
+        
+                            let challengesList = [];
+        
+                            let challengesData = res.data.challenges;
+        
+                            challengesData.forEach(challenge => {
+                                let challengesListItem = {
+                                    id: challenge.id,
+                                    title: challenge.title,
+                                    desc: challenge.description,
+                                    end_date: challenge.end_date,
+                                    timesCompleted: challenge.times_completed
+                                }
+        
+                                challengesList.push(challengesListItem);
+                            });
+        
+                            setChallenges(challengesList);
+                            setIsLoading(false);
                         }
+                    })
+                })
+            }
+        )
 
-                        challengesList.push(challengesListItem);
-                    });
-
-                    setChallenges(challengesList);
-                    setIsLoading(false);
-                }
-            })
-        })
-    }, []);
+        
+    }, [navigation]);
 
     if (isLoading) {
         return null

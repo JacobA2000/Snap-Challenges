@@ -469,6 +469,33 @@ def get_user_from_post_id(current_user, post_id):
 
     # Return the posts
     return jsonify(user.serialize()), 200
+
+@app.route("/api/users/me/posts", methods=["POST"])
+@token_required
+def create_user_post(current_user):
+    """
+    This function creates a post for a user.
+    """
+
+    # Get the data from the request
+    data = request.get_json()
+
+    # Check if the data is valid
+    if not data:
+        return jsonify({"message": "No data provided."}), 400
+
+    # Create the post
+    post = UserHasPostsModel(
+        user_id=current_user.public_id,
+        post_id=data["post_id"]
+    )
+
+    # Add the post to the database
+    db.session.add(post)
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 201
 #endregion
 
 #endregion
