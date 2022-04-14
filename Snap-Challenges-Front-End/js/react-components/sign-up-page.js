@@ -70,7 +70,12 @@ const SignUp = ({ navigation })  => {
     let user_dob = "";
     if (Platform.OS === 'android' || Platform.OS === 'ios') {
       console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + selectedDOB + '\n' + 'Country: ' + selectedCountry);  
-      user_dob = selectedDOB
+
+      year = selectedDOB.getFullYear();
+      month = selectedDOB.getMonth();
+      day = selectedDOB.getDate();
+
+      user_dob = new Date(year, month, day, 12,0,0).toISOString().split('T')[0]
     } else {
       console.log('First Name: ' + firstName + '\n' + 'Last Name: ' + lastName + '\n' + 'Email: ' + email + '\n' + 'Username: ' + username + '\n' + 'Password: ' + password + '\n' + 'Password Confirmation: ' + passwordConf + '\n' + 'Date of Birth: ' + textDob + '\n' + 'Country: ' + selectedCountry);
       
