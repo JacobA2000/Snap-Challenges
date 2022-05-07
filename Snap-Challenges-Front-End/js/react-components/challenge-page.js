@@ -98,7 +98,7 @@ const ChallengePage = ({ route })  => {
                                         }))
                                         .then(res => {
                                             if (res.status === 200) {
-                                                postsImages.push({post_id: postId, url: res.data.url});
+                                                postsImages.push({post_id: postId, url: res.data.url, upvotes: res.data.upvotes});
                                             
                                                 setImages(postsImages);
 

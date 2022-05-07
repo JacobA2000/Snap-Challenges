@@ -28,7 +28,7 @@ import { TabRouter } from '@react-navigation/native';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const VoteComponent = ({kudos, downvotes}) => {
+const VoteComponent = ({kudos, downvotes, post_id}) => {
 
     const kudosVotedImage = require('../../assets/menu-icons/kudos-voted.png');
     const kudosNotVoted = require('../../assets/menu-icons/kudos-not-voted.png');
@@ -50,13 +50,17 @@ const VoteComponent = ({kudos, downvotes}) => {
             setKudosImage(kudosVotedImage);
             setKudosCount(kudosCount + 1);
 
-            // SEND API REQUEST TO UPDATE SERVER KUDOS
+            // SEND API REQUEST TO INCREMENT SERVER UPVOTES
+            increment_votes('upvotes');
+
         } else if(kudosVoted && !downvotesVoted) {
             setKudosVoted(false);
             setKudosImage(kudosNotVoted);
             setKudosCount(kudosCount - 1);
 
-            // SEND API REQUEST TO UPDATE SERVER KUDOS
+            // SEND API REQUEST TO DECREMENT SERVER UPVOTES
+            decrement_votes('upvotes');
+
         } else if(!kudosVoted && downvotesVoted) {
             setKudosVoted(true);
             setKudosImage(kudosVotedImage);
@@ -66,7 +70,11 @@ const VoteComponent = ({kudos, downvotes}) => {
             setDownvotesImage(downvotesNotVoted);
             setDownvotesCount(downvotesCount - 1);
 
-            // SEND API REQUEST TO UPDATE SERVER KUDOS
+            // SEND API REQUEST TO UPDATE INCREMENT SERVER UPVOTES
+            increment_votes("upvotes");
+
+            // SEND API REQUEST TO UPDATE DECREMENT SERVER DOWNVOTES
+            decrement_votes("downvotes");
         }
     }
 
@@ -76,13 +84,17 @@ const VoteComponent = ({kudos, downvotes}) => {
             setDownvotesImage(downvotesVotedImage);
             setDownvotesCount(downvotesCount + 1);
 
-            // SEND API REQUEST TO UPDATE SERVER DOWNVOTES
+            // SEND API REQUEST TO INCREMENT SERVER DOWNVOTES
+            increment_votes("downvotes");
+
         } else if (downvotesVoted && !kudosVoted) {
             setDownvotesVoted(false);
             setDownvotesImage(downvotesNotVoted);
             setDownvotesCount(downvotesCount - 1);
 
-            // SEND API REQUEST TO UPDATE SERVER DOWNVOTES
+            // SEND API REQUEST TO DECREMENT SERVER DOWNVOTES
+            decrement_votes("downvotes");
+
         } else if (!downvotesVoted && kudosVoted) {
             setDownvotesVoted(true);
             setDownvotesImage(downvotesVotedImage);
@@ -92,8 +104,32 @@ const VoteComponent = ({kudos, downvotes}) => {
             setKudosImage(kudosNotVoted);
             setKudosCount(kudosCount - 1);
 
-            // SEND API REQUEST TO UPDATE SERVER DOWNVOTES
+            // SEND API REQUEST TO UPDATE INCREMENT SERVER DOWNVOTES
+            increment_votes("downvotes");
+
+            // SEND API REQUEST TO UPDATE DECREMENT SERVER UPVOTES
+            decrement_votes("upvotes");
         }
+    }
+
+    const increment_votes = (voteType) => {
+        fetch(`${API_URL}posts/${post_id}/increment_${voteType}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Token': globalStates.token
+            }
+        })
+    }
+
+    const decrement_votes = (voteType) => {
+        fetch(`${API_URL}posts/${post_id}/decrement_${voteType}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Access-Token': globalStates.token
+            }
+        })
     }
 
     return (
@@ -149,10 +185,16 @@ const CameraInfo = ({camera, focalLength, aperture, shutterSpeed, iso}) => {
         iso = 'N/A';
     }
 
+    camera = String(camera).toUpperCase();
+    focalLength = `${String(focalLength).toUpperCase()}mm`;
+    aperture = `f/${String(aperture).toUpperCase()}`;
+    shutterSpeed = `${String(shutterSpeed).toUpperCase()}s`;
+    iso = String(iso).toUpperCase();
+
     return (
         <View style={cameraInfoStyles.cameraInfoContainer}>
             <CameraInfoRow icon={require('../../assets/menu-icons/camera-icon.png')} text={camera} />
-            <CameraInfoRow icon={require('../../assets/menu-icons/focal-length-icon.png')} text={focalLength} />
+            <CameraInfoRow icon={require('../../assets/menu-icons/focal-length-icon.png')} text={focalLength}/>
             <CameraInfoRow icon={require('../../assets/menu-icons/aperture-icon.png')} text={aperture} />
             <CameraInfoRow icon={require('../../assets/menu-icons/shutter-speed-icon.png')} text={shutterSpeed} />
             <CameraInfoRow icon={require('../../assets/menu-icons/iso-icon.png')} text={iso} />
@@ -282,7 +324,7 @@ const PostPage = ({navigation, route, post_id})  => {
                 
                 <View style={styles.postDescriptionContainer}>
                     <View style={styles.postInfoContainer}>
-                        <VoteComponent kudos={kudos} downvotes={downvotes} />
+                        <VoteComponent kudos={kudos} downvotes={downvotes} post_id={post_id} />
                     
                         <Text style={styles.postDescription}>{post_description}</Text>
 
@@ -337,7 +379,7 @@ const cameraInfoStyles = StyleSheet.create({
     },
 
     cameraInfoText: {
-        fontSize: 14,
+        fontSize: 11,
         fontWeight: 'bold',
         fontFamily: 'Roboto',
         color: textColor,
