@@ -308,6 +308,101 @@ def delete_post(current_user, post_id):
 
     # Return a success code
     return "", 204
+
+#region: POST VOTES API ENDPOINTS
+@app.route("/api/posts/<int:post_id>/increment_upvotes", methods=["PUT"])
+@token_required
+def increment_post_upvotes(current_user, post_id):
+    """
+    This function increments an existing posts upvotes.
+    """
+    
+    # Query the database for the post
+    post = PostModel.query.filter_by(id=post_id).first()
+
+    # Check if the post exists
+    if post is None:
+        return jsonify({"message": "Post not found."}), 404
+
+    # Increment the post's upvotes
+    post.upvotes += 1
+
+    # Add the post to the database
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 204
+
+@app.route("/api/posts/<int:post_id>/decrement_upvotes", methods=["PUT"])
+@token_required
+def decrement_post_upvotes(current_user, post_id):
+    """
+    This function decrements an existing posts upvotes.
+    """
+        
+    # Query the database for the post
+    post = PostModel.query.filter_by(id=post_id).first()
+
+    # Check if the post exists
+    if post is None:
+        return jsonify({"message": "Post not found."}), 404
+
+    # Decrement the post's upvotes
+    post.upvotes -= 1
+
+    # Add the post to the database
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 204
+
+@app.route("/api/posts/<int:post_id>/increment_downvotes", methods=["PUT"])
+@token_required
+def increment_post_downvotes(current_user, post_id):
+    """
+    This function increments an existing posts downvotes.
+    """
+    
+    # Query the database for the post
+    post = PostModel.query.filter_by(id=post_id).first()
+
+    # Check if the post exists
+    if post is None:
+        return jsonify({"message": "Post not found."}), 404
+
+    # Increment the post's upvotes
+    post.downvotes += 1
+
+    # Add the post to the database
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 204
+
+@app.route("/api/posts/<int:post_id>/decrement_downvotes", methods=["PUT"])
+@token_required
+def decrement_post_downvotes(current_user, post_id):
+    """
+    This function decrements an existing posts downvotes.
+    """
+        
+    # Query the database for the post
+    post = PostModel.query.filter_by(id=post_id).first()
+
+    # Check if the post exists
+    if post is None:
+        return jsonify({"message": "Post not found."}), 404
+
+    # Decrement the post's upvotes
+    post.downvotes -= 1
+
+    # Add the post to the database
+    db.session.commit()
+
+    # Return the post
+    return jsonify(post.serialize()), 204
+#endregion
+
 #endregion
 
 #region: USER API ENDPOINT
@@ -799,6 +894,16 @@ def create_challenge_post(current_user, challenge_id):
 
     # Add the post to the database
     db.session.add(post)
+    db.session.commit()
+
+    # UPDATE THE CAHALLENGE TIMES COMPLETED
+    # Get the challenge
+    challenge = ChallengeModel.query.get(challenge_id)
+
+    # Increment the times completed
+    challenge.times_completed += 1
+
+    # Add the challenge to the database
     db.session.commit()
 
     # Return the post
